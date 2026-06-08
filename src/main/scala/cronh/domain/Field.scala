@@ -48,8 +48,9 @@ object Field {
 
   /** Composes multiple [[Term]]s into a single field.
     *
-    * Use this when you need to mix term shapes, e.g. a single value alongside
-    * a range: `Field.from(Term.Single(Minute(1)), Term.Range(Minute(5), Minute(10)))`.
+    * Use this when you need to mix term shapes, e.g. a single value alongside a
+    * range:
+    * `Field.from(Term.Single(Minute(1)), Term.Range(Minute(5), Minute(10)))`.
     * For multiple discrete values, prefer [[of]].
     */
   def from[A](first: Term[A], rest: Term[A]*): Field[A] =
