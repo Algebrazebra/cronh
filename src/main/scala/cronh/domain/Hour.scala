@@ -7,8 +7,8 @@ object Hour {
   /** Smart constructor for Hour with runtime checks.
     *
     * Examples:
-    *   - `Hour(5)` compiles
-    *   - `Hour(24)` fails at run-time
+    *   - `Hour(5)` returns a valid `Hour`
+    *   - `Hour(24)` throws [[IllegalArgumentException]]
     */
   def apply(value: Int): Hour = {
     if (value >= 0 && value <= 23) value
