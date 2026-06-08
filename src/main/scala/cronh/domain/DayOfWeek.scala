@@ -1,6 +1,6 @@
 package cronh.domain
 
-/** A day of the week.
+/** A cron week day.
   *
   * The numeric rendering of each day is dialect-specific and therefore lives in
   * the dialect renderer, not here.
