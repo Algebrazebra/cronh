@@ -8,8 +8,8 @@ object Minute {
   /** Smart constructor for Minute with runtime checks.
     *
     * Examples:
-    *   - `Minute(5)` compiles
-    *   - `Minute(61)` fails at run-time
+    *   - `Minute(5)` returns a valid `Minute`
+    *   - `Minute(61)` throws [[IllegalArgumentException]]
     */
   def apply(value: Int): Minute = {
     if (value >= 0 && value <= 59) value
