@@ -12,7 +12,7 @@ package cronh.domain
 final case class Field[+A] private (terms: ::[Term[A]]) {
 
   def ++[B >: A](other: Field[B]): Field[B] =
-    Field(::(terms.head, terms.tail ++ other.terms))
+    Field(::(terms.head, terms.tail ::: other.terms))
 }
 
 object Field {
