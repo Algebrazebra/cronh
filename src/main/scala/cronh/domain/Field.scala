@@ -30,13 +30,8 @@ object Field {
     *
     * Requires `from <= to`; throws [[IllegalArgumentException]] otherwise.
     */
-  def range[A: Ordering](from: A, to: A): Field[A] = {
-    require(
-      Ordering[A].lteq(from, to),
-      s"Start of range must be <= end of range."
-    )
+  def range[A: Ordering](from: A, to: A): Field[A] =
     Field(::(Range(from, to), Nil))
-  }
 
   /** Matches any of the given discrete values.
     *
