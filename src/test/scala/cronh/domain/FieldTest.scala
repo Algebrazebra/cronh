@@ -33,4 +33,16 @@ class FieldTest extends FunSuite {
     val c = Field.single(Minute(3))
     assertEquals((a ++ b) ++ c, a ++ (b ++ c))
   }
+
+  test("Field.from composes mixed term shapes") {
+    val f = Field.from(
+      Term.Single(Minute(1)),
+      Term.Range(Minute(5), Minute(10)),
+      Term.Single(Minute(15))
+    )
+    assertEquals(f.terms.length, 3)
+    assertEquals(f.terms.head, Term.Single(Minute(1)))
+    assertEquals(f.terms(1), Term.Range(Minute(5), Minute(10)))
+    assertEquals(f.terms(2), Term.Single(Minute(15)))
+  }
 }
