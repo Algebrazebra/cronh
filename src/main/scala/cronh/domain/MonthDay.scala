@@ -14,5 +14,5 @@ object MonthDay {
       )
   }
 
-  given Ordering[MonthDay] = Ordering[Int]
+  given Ordering[MonthDay] = Ordering.Int
 }
