@@ -1,8 +1,12 @@
 package cronh.domain
 
-import munit.FunSuite
+import cronh.domain.Generators.given
+import munit.ScalaCheckSuite
+import org.scalacheck.Prop.*
 
-class MonthTest extends FunSuite {
+class MonthTest extends ScalaCheckSuite {
+
+  private val ord = summon[Ordering[Month]]
 
   test("Month enumerates all twelve months") {
     assertEquals(Month.values.length, 12)
@@ -19,9 +23,26 @@ class MonthTest extends FunSuite {
     assertEquals(sorted, Month.values.toList)
   }
 
-  test("Month ordering is consistent with .value") {
-    val ord = summon[Ordering[Month]]
-    assert(ord.lt(Month.March, Month.November))
-    assert(ord.gt(Month.December, Month.January))
+  property("Month ordering is reflexive") = forAll { (m: Month) =>
+    ord.compare(m, m) == 0
+  }
+
+  property("Month ordering is antisymmetric") = forAll { (a: Month, b: Month) =>
+    ord.compare(a, b).sign == -ord.compare(b, a).sign
+  }
+
+  property("Month ordering is transitive") = forAll {
+    (a: Month, b: Month, c: Month) =>
+      if (ord.lteq(a, b) && ord.lteq(b, c)) ord.lteq(a, c)
+      else true
+  }
+
+  property("Month ordering agrees with .value") = forAll {
+    (a: Month, b: Month) =>
+      ord.compare(a, b).sign == a.value.compare(b.value).sign
+  }
+
+  property("Month equality is reflexive") = forAll { (m: Month) =>
+    m == m
   }
 }
