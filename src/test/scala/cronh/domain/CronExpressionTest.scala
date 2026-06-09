@@ -1,36 +1,58 @@
 package cronh.domain
 
-import munit.FunSuite
+import cronh.domain.Generators.given
+import munit.ScalaCheckSuite
+import org.scalacheck.Prop.*
 
-class CronExpressionTest extends FunSuite {
+class CronExpressionTest extends ScalaCheckSuite {
 
-  test("CronExpression can be constructed with all five fields") {
-    val expr = CronExpression(
-      minute = Field.single(Minute(0)),
-      hour = Field.single(Hour(9)),
-      dayOfMonth = Field.all,
-      month = Field.all,
-      dayOfWeek = Field.range(DayOfWeek.Monday, DayOfWeek.Friday)
-    )
-    assertEquals(expr.minute, Field.single(Minute(0)))
-    assertEquals(expr.hour, Field.single(Hour(9)))
+  property("Construction preserves every field") = forAll {
+    (
+        m: Field[Minute],
+        h: Field[Hour],
+        d: Field[MonthDay],
+        mo: Field[Month],
+        dow: Field[DayOfWeek]
+    ) =>
+      val e = CronExpression(m, h, d, mo, dow)
+      e.minute == m &&
+      e.hour == h &&
+      e.dayOfMonth == d &&
+      e.month == mo &&
+      e.dayOfWeek == dow
   }
 
-  test("CronExpression equality is structural") {
-    val a = CronExpression(
-      minute = Field.single(Minute(30)),
-      hour = Field.single(Hour(14)),
-      dayOfMonth = Field.all,
-      month = Field.all,
-      dayOfWeek = Field.all
-    )
-    val b = CronExpression(
-      minute = Field.single(Minute(30)),
-      hour = Field.single(Hour(14)),
-      dayOfMonth = Field.all,
-      month = Field.all,
-      dayOfWeek = Field.all
-    )
-    assertEquals(a, b)
+  property("Equality is reflexive") = forAll { (e: CronExpression) =>
+    e == e
+  }
+
+  property("copy() with no overrides is identity") = forAll {
+    (e: CronExpression) =>
+      e.copy() == e
+  }
+
+  property("Equality depends on the minute field") = forAll {
+    (a: CronExpression, b: CronExpression) =>
+      a.copy(minute = b.minute) == a == (a.minute == b.minute)
+  }
+
+  property("Equality depends on the hour field") = forAll {
+    (a: CronExpression, b: CronExpression) =>
+      a.copy(hour = b.hour) == a == (a.hour == b.hour)
+  }
+
+  property("Equality depends on the dayOfMonth field") = forAll {
+    (a: CronExpression, b: CronExpression) =>
+      a.copy(dayOfMonth = b.dayOfMonth) == a == (a.dayOfMonth == b.dayOfMonth)
+  }
+
+  property("Equality depends on the month field") = forAll {
+    (a: CronExpression, b: CronExpression) =>
+      a.copy(month = b.month) == a == (a.month == b.month)
+  }
+
+  property("Equality depends on the dayOfWeek field") = forAll {
+    (a: CronExpression, b: CronExpression) =>
+      a.copy(dayOfWeek = b.dayOfWeek) == a == (a.dayOfWeek == b.dayOfWeek)
   }
 }
