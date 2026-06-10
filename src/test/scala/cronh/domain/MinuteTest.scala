@@ -10,4 +10,12 @@ class MinuteTest extends ScalaCheckSuite {
     else Minute(n): Unit
   }
 
+  test("Minute(60) is rejected") {
+    intercept[IllegalArgumentException](Minute(60))
+  }
+
+  test("Minute(-1) is rejected") {
+    intercept[IllegalArgumentException](Minute(-1))
+  }
+
 }

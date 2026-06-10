@@ -9,4 +9,12 @@ class MonthDayTest extends ScalaCheckSuite {
     if (n < 1 || n > 31) intercept[IllegalArgumentException](MonthDay(n)): Unit
     else MonthDay(n): Unit
   }
+
+  test("MonthDay(0) is rejected") {
+    intercept[IllegalArgumentException](MonthDay(0))
+  }
+
+  test("MonthDay(32) is rejected") {
+    intercept[IllegalArgumentException](MonthDay(32))
+  }
 }
