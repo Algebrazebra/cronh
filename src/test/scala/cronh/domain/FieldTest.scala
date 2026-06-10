@@ -2,6 +2,7 @@ package cronh.domain
 
 import cronh.domain.Generators.given
 import munit.ScalaCheckSuite
+import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.scalacheck.Prop.*
 
@@ -10,9 +11,7 @@ class FieldTest extends ScalaCheckSuite {
   private val smallMinuteList: Gen[List[Minute]] =
     Gen
       .chooseNum(0, 8)
-      .flatMap(
-        Gen.listOfN(_, summon[org.scalacheck.Arbitrary[Minute]].arbitrary)
-      )
+      .flatMap(Gen.listOfN(_, summon[Arbitrary[Minute]].arbitrary))
 
   test("Field.all is assignable as Field[Minute] via covariance") {
     val f: Field[Minute] = Field.all
@@ -43,17 +42,16 @@ class FieldTest extends ScalaCheckSuite {
       intercept[IllegalArgumentException](Field.range(hi, lo)): Unit
     }
 
-  property("Field.of wraps each value in a Term.Single") = forAll(
-    summon[org.scalacheck.Arbitrary[Minute]].arbitrary,
-    smallMinuteList
-  ) { (head, tail) =>
-    val f = Field.of(head, tail*)
-    val allSingle = f.terms.forall {
-      case Term.Single(_) => true
-      case _              => false
+  property("Field.of wraps each value in a Term.Single") =
+    forAll(summon[Arbitrary[Minute]].arbitrary, smallMinuteList) {
+      (head, tail) =>
+        val f = Field.of(head, tail*)
+        val allSingle = f.terms.forall {
+          case Term.Single(_) => true
+          case _              => false
+        }
+        f.terms.length == tail.length + 1 && allSingle
     }
-    f.terms.length == tail.length + 1 && allSingle
-  }
 
   property("Field.from preserves the input term list") = forAll {
     (head: Term[Minute], tail: List[Term[Minute]]) =>
@@ -66,11 +64,6 @@ class FieldTest extends ScalaCheckSuite {
       (a ++ b).terms == a.terms ::: b.terms
   }
 
-  property("++ preserves total length") = forAll {
-    (a: Field[Minute], b: Field[Minute]) =>
-      (a ++ b).terms.length == a.terms.length + b.terms.length
-  }
-
   property("++ is associative") = forAll {
     (a: Field[Minute], b: Field[Minute], c: Field[Minute]) =>
       ((a ++ b) ++ c) == (a ++ (b ++ c))
@@ -80,10 +73,6 @@ class FieldTest extends ScalaCheckSuite {
     val a = Field.single(Minute(1))
     val b = Field.single(Minute(2))
     assertNotEquals(a ++ b, b ++ a)
-  }
-
-  property("Field equality is reflexive") = forAll { (f: Field[Minute]) =>
-    f == f
   }
 
   property("Field.all is not an identity for ++") = forAll {
