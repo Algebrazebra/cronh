@@ -201,7 +201,7 @@ Status legend: ✅ done · 🟡 in progress · ⬜ not started · ➖ deferred
 - ✅ `Field[+A]` with `all`, `single`, `range`, `of`, `from`, `++`
 - ✅ `CronExpression` (no phantoms yet)
 - ✅ Tests for `Minute`, `Hour`, `MonthDay`, `Month`, `DayOfWeek`, `Term`, `Field`, `CronExpression`
-- ⬜ Boundary tests: `Minute(60)`, `Hour(24)`, `MonthDay(0)` and `MonthDay(32)` failure cases (some may exist — audit)
+- ✅ Boundary tests: `Minute(60)`, `Hour(24)`, `MonthDay(0)` and `MonthDay(32)` failure cases (some may exist — audit)
 - ⬜ Decide: keep `Field.from`, or remove once `++` chains feel natural in DSL code
 
 ### Phase 2 — Unix dialect renderer ⬜
