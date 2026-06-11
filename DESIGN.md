@@ -2,7 +2,7 @@
 
 A living document for the `cronh` Scala 3 cron DSL. Captures the locked-in design decisions, the rejected alternatives that shaped them, the current type model, and where each implementation phase stands.
 
-> **Status snapshot (2026-06-09):** Phase 1 (domain model) is largely complete. Phases 2–8 are not yet started. The implementation matches the final plan with a few small drifts noted under [Drift from the plan](#drift-from-the-plan).
+> **Status snapshot (2026-06-11):** Phase 1 (domain model) is largely complete. Phases 2–8 are not yet started. The implementation matches the final plan with a few small drifts noted under [Drift from the plan](#5-drift-from-the-plan). §4 records how every known cron edge case is dispatched by the model.
 
 ---
 
@@ -43,7 +43,7 @@ Each position has its own validated type: `Minute` (0–59), `Hour` (0–23), `M
 
 ### 2.3 Wildcard is a value, not a shape
 
-`Term.All` sits *alongside* `Single` and `Range`, not as a parallel alternative to the "real" cases. A wildcard inside a list (`*,5` in cron) is then naturally `Field(All :: Single(5) :: Nil)` — same machinery as any other term.
+`Term.All` sits *alongside* `Single` and `Range`, not as a parallel alternative to the "real" cases. A wildcard inside a list (`*,5` in cron) is then naturally `Field(All :: Single(5) :: Nil)` — same machinery as any other term. This is faithful to the Vixie baseline, where a field is the bitwise OR of its elements, so any field containing `*` already denotes every value. Such a field is therefore *redundant*, not illegal — `*,5` is accepted and collapses to `Field.all` under Phase 6 normalization (see §4.4).
 
 - **Rejected:** `Wildcard` as a separate top-level alternative to `Exact`/`Range`/`Step`. Doesn't compose inside lists — you can't put a wildcard "inside" a `Many` if `Many: List[Int]`.
 
@@ -111,6 +111,15 @@ Standard library only. `Field` is a semigroup under `++`, but `cats.Semigroup` i
 
 `opaque type`, `extension`, `enum`, and `given` are used freely. Cross-building to 2.13 was considered and rejected: cost ≈ doubles MVP effort, the 2.13 surface would be substantially noisier (implicit classes × phantom-type constraints), and no concrete 2.13 consumer exists.
 
+### 2.15 Cross-field semantics live in the dialect, not the model
+
+`CronExpression` stores five independent fields and attaches no meaning to their *combination*. Two combination questions are explicitly pushed to the renderer/dialect layer:
+
+- **Day-of-month vs day-of-week.** The POSIX/Vixie baseline ORs the two when both are non-`*` (the schedule fires if *either* matches). The library adopts Vixie OR as its baseline semantics. The Quartz dialect (future) adds `?` ("no specific value") so a user can mark one of the two fields as irrelevant, expressing the AND-style "match only the other field." Encoding this in the model would burn one dialect's convention into the type (cf. §2.11).
+- **Never-fire combinations.** `0 0 30 2 *` (February 30th) is valid in every field yet can never match. Detecting it requires cross-field analysis and is scoped as a future phase, not part of the core model (see §4.6).
+
+- **Rejected:** Baking OR/AND or impossible-date rejection into `CronExpression`'s constructor. It couples the unit-agnostic container to dialect-specific run semantics and to a calendar model the core deliberately omits.
+
 ---
 
 ## 3. Current Type Model
@@ -164,7 +173,88 @@ Phantom-type parameters (Phase 4) will turn this into `CronExpression[Time <: St
 
 ---
 
-## 4. Drift from the plan
+## 4. Edge-Case Handling
+
+Cron has no ratified specification. POSIX defines the five-field structure but not parser behavior for invalid or ambiguous input; the closest reference is **Vixie cron (1988)**, the de facto baseline this library targets (§2.12). Every case below is therefore an explicit design decision, not a deviation from a standard.
+
+The model dispatches each known edge case through one of five strategies:
+
+| Strategy | Mechanism | Example |
+| --- | --- | --- |
+| **Unrepresentable** | the type model gives no way to build it | `*-5`, `1,,3` |
+| **Rejected at construction** | smart constructor throws `IllegalArgumentException` | `5-3`, `Minute(60)` |
+| **Eliminated by design** | the type removes the ambiguity entirely | `0` vs `7` for Sunday |
+| **Accepted as redundant** | legal input, preserved as written, canonicalized by Phase 6 `normalized` | `1-5,3-7`, `*,1` |
+| **Out of scope / future** | non-goal for v1, tracked for a later phase | `*/n`, `L`/`W`/`#`/`?`, Feb 30 |
+
+These map onto the usual notion of validation tiers: *unrepresentable* + *rejected* are hard errors caught at construction; *accepted as redundant* are the "valid but likely unintentional" cases, surfaced (not blocked) via normalization; never-fire detection is its own future tier (§4.6).
+
+### 4.1 Structurally impossible — unrepresentable
+
+There is no parser in v1; values are built from typed constructors, so whole classes of string-level malformation simply have no representation.
+
+| Construct | Why it can't be built |
+| --- | --- |
+| `*-5`, `5-*` (wildcard as a range bound) | `Term.Range[A]` holds two `A` values; `All` is `Term[Nothing]`, not an `A`, so it cannot sit inside a range. |
+| `1,,3`, `,1`, `1,` (empty list elements) | Fields are composed from `Term` values, not by splitting a string on commas — there is no empty slot to represent. |
+| empty field | `Field` wraps `::[Term[A]]` (a non-empty cons cell). |
+| `MON-3` (named/numeric mix in a range) | `Range[DayOfWeek]` requires both bounds be `DayOfWeek`; `Range[Month]`, both `Month`. The two spellings can't be mixed in one range. |
+| a value in the wrong position (e.g. an hour in the minute field) | `CronExpression` types each field by its unit (§2.2). |
+
+### 4.2 Rejected at construction — throws
+
+| Construct | Guard |
+| --- | --- |
+| `5-3` and any inverted range | `Term.Range.apply` requires `from <= to`. |
+| `60` (minute), `24` (hour), `0` or `32` (day) | per-unit smart constructors validate the domain: `Minute` 0–59, `Hour` 0–23, `MonthDay` 1–31. |
+| `13`+ (month), out-of-set weekday | `Month` and `DayOfWeek` are enums — only the twelve / seven cases exist. |
+
+### 4.3 Eliminated by design — ambiguity removed
+
+| Ambiguity | Resolution |
+| --- | --- |
+| `0` vs `7` for Sunday | `DayOfWeek` is an enum with a single `Sunday`; there is no numeric duality. The dialect renderer picks the encoding (§2.11). |
+| `SUN,0`, `0,7` (two spellings of one value) | both denote the same enum case — there is only one way to name Sunday in the model. |
+| `jan` vs `JAN` (case sensitivity) | a parser/renderer concern; the model holds `Month.January`, and spelling is the renderer's job. No parser in v1. |
+
+### 4.4 Accepted as redundant — valid, canonicalized by Phase 6
+
+The Vixie baseline treats a field as the bitwise OR of its elements: overlaps, duplicates, and full-range spans are legal and simply denote the union. The model preserves input as written (§2.7) and exposes an explicit `normalized` operation (Phase 6) to canonicalize.
+
+| Construct | Normalized form |
+| --- | --- |
+| `*,1`, `1,*` (wildcard in a list) | `Field.all`. A field containing `All` already denotes every value (Vixie OR), so it collapses to `*` — accepted, never illegal (§2.3). |
+| `1-5,3-7` (overlapping ranges) | merged range `1-7`. |
+| `1-5,3` (value inside a range) | `1-5`. |
+| `1,1` (duplicate) | `1`. |
+| `0-59`, `0-23`, `1-31`, `1-12` (tautological full span) | `Field.all`. |
+| `5-5` (degenerate range) | `Single(5)`. `Range.apply` permits `from == to`, so this is constructible and merely redundant. |
+
+Normalization is **opt-in**: unnormalized fields are valid and render faithfully. `normalized` exists for readability and diff/equality comparisons, not as a gate.
+
+### 4.5 Cross-field semantics — day-of-month vs day-of-week
+
+When both day fields are non-`*`, Vixie cron fires if **either** matches (OR); some implementations AND them. The library adopts **Vixie OR** as its baseline (§2.15). The model attaches no semantics to the field combination — OR-vs-AND is a dialect/renderer concern. The Quartz dialect (future) introduces `?` ("no specific value") so a user can explicitly mark one of the two fields as irrelevant, expressing the AND-style "match only the other field."
+
+### 4.6 Never-fire combinations — future phase
+
+`0 0 30 2 *` (February 30th), `31` in a 30-day month, and `29 2` (leap-year-only) are valid in every field yet match no real date. They are the most dangerous class in practice: syntactically valid, semantically unambiguous, no runtime error, and silently never execute.
+
+The current model cannot catch them because the conflict is **cross-field** — `MonthDay(30)` and `Month.February` are each valid in isolation. Cross-field never-fire analysis is scoped as a **future phase** (it needs a calendar model the core deliberately omits), and is the highest-value diagnostic to add (§2.15, [Future / out of v1](#future--out-of-v1)).
+
+### 4.7 Out of scope for v1 — non-goals
+
+| Construct | Disposition |
+| --- | --- |
+| steps `*/n` and every step edge case (`*/0` div-by-zero, `5/3` start/step, degenerate `*/60`, chained `1-5/2/3`, tautological `*/1`) | Vixie *extension*, added later as `VixieTerm` (§2.12). Not in the v1 `Term`. |
+| `L`, `W`, `#`, `?` (Quartz), `H` (Jenkins) | future Quartz dialect. |
+| seconds / year field (6- or 7-field cron) | future Quartz dialect; v1 `CronExpression` is strictly five fields. |
+
+Because steps are absent from v1, none of their edge cases can arise — they are listed here only so the omission is explicit rather than accidental.
+
+---
+
+## 5. Drift from the plan
 
 Small, intentional or harmless differences between the final plan in `old_convo.txt` and the current code:
 
@@ -180,7 +270,7 @@ None of these are blockers. Documenting them so future-me doesn't think they're 
 
 ---
 
-## 5. Phase Tracker
+## 6. Phase Tracker
 
 Status legend: ✅ done · 🟡 in progress · ⬜ not started · ➖ deferred
 
@@ -245,6 +335,7 @@ Decision to lock in before coding: does `Schedule.daily` set `Time = Set` (so `.
 
 - ⬜ `DomainBounds[A]` typeclass
 - ⬜ `Field[A].normalized(using Ordering[A], DomainBounds[A])` removes duplicates, merges overlapping ranges, collapses to `Field.all` when total
+- ⬜ Collapse any field containing `Term.All` to `Field.all` (Vixie OR semantics; see §4.4)
 - ⬜ `Field[A].isNormalized` predicate
 - ⬜ Idempotence + semantic-equivalence tests
 
@@ -267,11 +358,12 @@ Decision to lock in before coding: does `Schedule.daily` set `Time = Set` (so `.
 - Vixie extension: `Step[A](base: Term[A], n: Int)` as a `sealed trait VixieTerm[+A] extends Term[A]`. DSL: `.every(15, Minutes)`. Likely promoted ahead of Quartz because most Unix cron implementations actually accept it.
 - Quartz dialect: 6-field cron, `L`/`W`/`#`/`?`, dialect-specific term subtypes for `MonthDay` and `DayOfWeek`.
 - Parser: `String => Either[ParseError, CronExpression]`.
+- Never-fire detection: cross-field analysis flagging impossible dates (`30 2` February 30th, `31` in 30-day months, leap-only `29 2`). Syntactically valid, unambiguous, and silently never executes — the highest-value diagnostic. Deferred because it needs a calendar model the core omits (see §4.6).
 - `cronh-cats` module: `Semigroup[Field[A]]`, `Eq`, `Show`.
 
 ---
 
-## 6. Open Questions
+## 7. Open Questions
 
 Tracked here so they're not lost between sessions.
 
@@ -283,7 +375,7 @@ Tracked here so they're not lost between sessions.
 
 ---
 
-## 7. How to use this document
+## 8. How to use this document
 
 - When starting work on a phase: read its section here, then the corresponding section in `old_convo.txt` for full rationale if needed.
 - When making a non-trivial design decision: add it to §2 with a one-line rejected alternative.
