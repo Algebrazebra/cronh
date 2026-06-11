@@ -12,13 +12,16 @@ object Minute {
     *   - `Minute(61)` throws [[IllegalArgumentException]]
     */
   def apply(value: Int): Minute = {
-    if (value >= 0 && value <= 59) value
-    else
-      throw new IllegalArgumentException(
-        s"Minute must be between 0 and 59, got $value"
-      )
+    require(
+      value >= 0 && value <= 59,
+      s"Minute must be between 0 and 59, got $value"
+    )
+    value
   }
 
   given Ordering[Minute] = Ordering.Int
+
+  /** The underlying numeric value (0-59). */
+  extension (minute: Minute) def value: Int = minute
 
 }

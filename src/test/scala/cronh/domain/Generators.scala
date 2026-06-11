@@ -56,7 +56,7 @@ object Generators {
     )
   }
 
-  given Arbitrary[CronExpression] = Arbitrary(
+  given Arbitrary[FreshCron] = Arbitrary(
     for {
       m <- summon[Arbitrary[Field[Minute]]].arbitrary
       h <- summon[Arbitrary[Field[Hour]]].arbitrary
