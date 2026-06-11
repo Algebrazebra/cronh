@@ -9,4 +9,13 @@ class HourTest extends ScalaCheckSuite {
     if (n < 0 || n >= 24) intercept[IllegalArgumentException](Hour(n)): Unit
     else Hour(n): Unit
   }
+
+  test("Hour(24) is rejected") {
+    intercept[IllegalArgumentException](Hour(24))
+  }
+
+  test("Hour(-1) is rejected") {
+    intercept[IllegalArgumentException](Hour(-1))
+  }
+
 }
