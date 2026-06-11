@@ -1,7 +1,7 @@
 package cronh.domain
 
 import munit.ScalaCheckSuite
-import org.scalacheck.Prop._
+import org.scalacheck.Prop.*
 
 class MinuteTest extends ScalaCheckSuite {
 

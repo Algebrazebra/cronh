@@ -18,10 +18,4 @@ class MonthTest extends FunSuite {
     val sorted = Month.values.toList.sorted
     assertEquals(sorted, Month.values.toList)
   }
-
-  test("Month ordering is consistent with .value") {
-    val ord = summon[Ordering[Month]]
-    assert(ord.lt(Month.March, Month.November))
-    assert(ord.gt(Month.December, Month.January))
-  }
 }

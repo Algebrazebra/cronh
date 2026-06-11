@@ -1,18 +1,21 @@
 package cronh.domain
 
-import munit.FunSuite
+import cronh.domain.Generators.given
+import munit.ScalaCheckSuite
+import org.scalacheck.Prop.*
 
-class TermTest extends FunSuite {
+class TermTest extends ScalaCheckSuite {
 
-  test("Term.Range rejects backwards ranges") {
-    intercept[IllegalArgumentException] {
-      Term.Range(Minute(5), Minute(1))
+  property("Term.Range accepts ordered endpoints and round-trips") = forAll {
+    (a: Minute, b: Minute) =>
+      val ord = summon[Ordering[Minute]]
+      val (lo, hi) = if (ord.lteq(a, b)) (a, b) else (b, a)
+      val r = Term.Range(lo, hi)
+      r.from == lo && r.to == hi
+  }
+
+  property("Term.Range rejects backwards ranges") =
+    forAll(Generators.outOfOrder[Minute]) { case (hi, lo) =>
+      intercept[IllegalArgumentException](Term.Range(hi, lo)): Unit
     }
-  }
-
-  test("Term.Range accepts equal endpoints") {
-    val r = Term.Range(Minute(3), Minute(3))
-    assertEquals(r.from, Minute(3))
-    assertEquals(r.to, Minute(3))
-  }
 }
