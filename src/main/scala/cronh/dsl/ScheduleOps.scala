@@ -15,6 +15,7 @@ extension [D <: DaySpec](expression: CronExpression[Status.Unset, D]) {
       .retag[Status.Set, D]
 
   /** Sets the hour, on the hour (minute 0). */
+  @targetName("atHour")
   def at(hour: Hour): CronExpression[Status.Set, D] =
     at(hour, Minute(0))
 
