@@ -17,4 +17,11 @@ object Status {
 
   /** The time of day is still at its default and may be set. */
   sealed trait Unset extends Status
+
+  /** The hour has been constrained (e.g. via `.between` or `Schedule.hourly`)
+    * but the minute is still at its default. Only the minute-only `.at(30.m)`
+    * overload is available, so the existing hour constraint cannot be silently
+    * overwritten by a later `.at(hour)`.
+    */
+  sealed trait HourSet extends Status
 }

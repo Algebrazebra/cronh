@@ -19,18 +19,24 @@ extension [D <: DaySpec](expression: CronExpression[Status.Unset, D]) {
   def at(hour: Hour): CronExpression[Status.Set, D] =
     at(hour, Minute(0))
 
-  /** Sets only the minute, keeping the hour field as already constrained.
-    * Useful after [[between]]: `.between(9.h, 17.h).at(30.m)`.
+  /** Constrains the hour to the inclusive range `[from, to]` and moves the
+    * expression into the [[Status.HourSet]] state: the hour is now fixed, so
+    * only the minute-only `.at(30.m)` overload remains available — a later
+    * `.at(hour)` that would silently destroy the range is a compile error.
+    */
+  def between(from: Hour, to: Hour): CronExpression[Status.HourSet, D] =
+    expression.copy(hour = Field.range(from, to)).retag[Status.HourSet, D]
+}
+
+extension [D <: DaySpec](expression: CronExpression[Status.HourSet, D]) {
+
+  /** Sets only the minute, keeping the already-constrained hour field. The only
+    * `.at` available after [[between]] or `Schedule.hourly`, so the hour
+    * constraint cannot be overwritten: `.between(9.h, 17.h).at(30.m)`.
     */
   @targetName("atMinute")
   def at(minute: Minute): CronExpression[Status.Set, D] =
     expression.copy(minute = Field.single(minute)).retag[Status.Set, D]
-
-  /** Constrains the hour to the inclusive range `[from, to]` without marking
-    * the time as set, so the minute can still be chosen with `.at(30.m)`.
-    */
-  def between(from: Hour, to: Hour): CronExpression[Status.Unset, D] =
-    expression.copy(hour = Field.range(from, to))
 }
 
 extension [T <: Status](expression: CronExpression[T, DaySpec.NoDay]) {
