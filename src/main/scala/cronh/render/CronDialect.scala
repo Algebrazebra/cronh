@@ -14,12 +14,37 @@ trait CronDialect {
   /** Dialect-specific numbering of week days. */
   given dayOfWeekRender: Render[DayOfWeek]
 
-  /** Renders the day-of-week field. Overridable so a dialect can fix up
-    * constructs its numbering cannot express as-is (see
-    * [[UnixCronDialect.renderDayOfWeek]]).
+  /** Renders the day-of-week field.
+    *
+    * The model orders weekdays Monday-first, so a range whose upper bound is
+    * `Sunday` (the maximum) is the only one that can invert under a dialect
+    * whose numbering does not also put Sunday last — e.g. a Quartz-style
+    * `Sun=1` dialect would otherwise render `Range(Saturday, Sunday)` as the
+    * invalid `7-1`. Such ranges are rewritten *at the term level*, before the
+    * dialect's numbering is applied, into the equivalent
+    * `Range(from, Saturday)` plus a trailing `Single(Sunday)` (collapsing a
+    * one-element range to a single), so every dialect inherits a valid
+    * rendering. Overridable for dialects with needs beyond this.
     */
   protected def renderDayOfWeek(field: Field[DayOfWeek]): String =
-    renderField(field)
+    field.terms
+      .flatMap(splitSundayTerminatedRange)
+      .map(renderTerm(_))
+      .mkString(",")
+
+  private def splitSundayTerminatedRange(
+      term: Term[DayOfWeek]
+  ): List[Term[DayOfWeek]] =
+    term match {
+      case Term.Range(DayOfWeek.Sunday, DayOfWeek.Sunday) =>
+        List(Term.Single(DayOfWeek.Sunday))
+      case Term.Range(from, DayOfWeek.Sunday) =>
+        val head =
+          if (from == DayOfWeek.Saturday) Term.Single(DayOfWeek.Saturday)
+          else Term.Range(from, DayOfWeek.Saturday)
+        List(head, Term.Single(DayOfWeek.Sunday))
+      case other => List(other)
+    }
 
   /** Renders the five fields, space-separated, in cron order. */
   final def render(expression: CronExpression[?, ?]): String =
