@@ -90,6 +90,7 @@ Backwards ranges (`Range(5, 2)`), domain violations (`Minute(99)`), and empty fi
 - **Why this matters:** Without phantoms, `Schedule.daily.at(9.h).at(14.h)` silently overwrites, and `Schedule.daily.every(15, Minutes).at(9.h)` destroys the step. With phantoms, both are compile errors.
 - **Rejected alternative:** Document "last write wins" and accept the footgun. For a domain that gets paged on at 3 AM, the type cost is worth it.
 - **Implementation tradeoff:** Phantom flag changes use a `private[cronh]` cast helper to avoid `copy` re-typing every call. Concentrated in one place, safe by construction.
+- **Known escape hatch:** The phantoms guard the *DSL surface*, not the data type. `CronExpression` is a public case class (§2.9 keeps it a storable plain value), so its synthesized `apply` and `copy` can still produce a `Set`-tagged value with a freshly changed field — e.g. `Schedule.daily.at(9.h).copy(hour = Field.single(Hour(14)))` is still typed `Set` yet re-times the expression. This is the deliberate cost of keeping the type a transparent, constructible record rather than locking the constructor behind a factory. The phantom flags are a *DSL convenience*, not a security boundary; treat `copy`/`apply` as raw construction that does not re-establish them. The scaladoc on `CronExpression` says the same.
 
 ### 2.11 Rendering is dialect-bound
 
