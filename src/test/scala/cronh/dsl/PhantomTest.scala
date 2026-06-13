@@ -40,6 +40,21 @@ class PhantomTest extends FunSuite {
     assert(compileErrors("Schedule.monthly.onDay(15.dom)").nonEmpty)
   }
 
+  test(".in twice is a compile error (no silent overwrite)") {
+    assert(
+      compileErrors(
+        "Schedule.daily.at(9.h).in(cronh.domain.Month.June)" +
+          ".in(cronh.domain.Month.July)"
+      ).nonEmpty
+    )
+  }
+
+  test(".in after Schedule.yearly is a compile error") {
+    assert(
+      compileErrors("Schedule.yearly.in(cronh.domain.Month.March)").nonEmpty
+    )
+  }
+
   test("valid chains compile and run") {
     val a = Schedule.daily.at(9.h)
     val b = Schedule.daily.on(Mon).at(noon)

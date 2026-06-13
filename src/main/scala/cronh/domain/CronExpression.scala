@@ -2,7 +2,7 @@ package cronh.domain
 
 /** A POSIX cron expression with five fields.
   *
-  * The two phantom type parameters track DSL state and carry no runtime
+  * The three phantom type parameters track DSL state and carry no runtime
   * representation:
   *
   *   - `Time` records whether the time of day has been set ([[Status.Set]]) or
@@ -10,13 +10,20 @@ package cronh.domain
   *   - `Day` records whether the schedule is constrained by weekday
   *     ([[DaySpec.ByWeekday]]), by day of month ([[DaySpec.ByMonthDay]]), or
   *     not at all ([[DaySpec.NoDay]]).
+  *   - `Mon` records whether the month has been constrained ([[MonthSpec.Set]])
+  *     or is still at its default ([[MonthSpec.Unset]]), so a second `.in` is a
+  *     compile error rather than a silent overwrite.
   *
-  * Both parameters are covariant so that a directly constructed expression
+  * All parameters are covariant so that a directly constructed expression
   * (whose phantoms infer to `Nothing`) conforms to every state and remains
   * usable with the DSL. Equality ignores the phantoms: two expressions with the
   * same five fields are equal.
   */
-final case class CronExpression[+Time <: Status, +Day <: DaySpec](
+final case class CronExpression[
+    +Time <: Status,
+    +Day <: DaySpec,
+    +Mon <: MonthSpec
+](
     minute: Field[Minute],
     hour: Field[Hour],
     dayOfMonth: Field[MonthDay],
@@ -30,11 +37,15 @@ final case class CronExpression[+Time <: Status, +Day <: DaySpec](
     * construction. Concentrated here so DSL extensions don't each need their
     * own cast (DESIGN.md §2.10).
     */
-  private[cronh] def retag[T <: Status, D <: DaySpec]: CronExpression[T, D] =
-    this.asInstanceOf[CronExpression[T, D]]
+  private[cronh] def retag[
+      T <: Status,
+      D <: DaySpec,
+      M <: MonthSpec
+  ]: CronExpression[T, D, M] =
+    this.asInstanceOf[CronExpression[T, D, M]]
 }
 
 /** A cron expression with nothing set yet: the natural starting point for the
   * DSL (`Schedule.daily`, `Schedule.hourly`, ...).
   */
-type FreshCron = CronExpression[Status.Unset, DaySpec.NoDay]
+type FreshCron = CronExpression[Status.Unset, DaySpec.NoDay, MonthSpec.Unset]
