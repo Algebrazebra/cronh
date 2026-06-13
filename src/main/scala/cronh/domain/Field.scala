@@ -73,7 +73,7 @@ object Field {
       if (field.terms.contains(Term.All)) all
       else {
         val domain = bounds.domain
-        val indexOf = domain.zipWithIndex.toMap
+        val indexOf = bounds.indexOf
         val covered = field.terms
           .flatMap {
             case Term.All             => domain.indices
