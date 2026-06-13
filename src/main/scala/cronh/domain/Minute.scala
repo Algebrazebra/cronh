@@ -21,6 +21,10 @@ object Minute {
 
   given Ordering[Minute] = Ordering.Int
 
+  given DomainBounds[Minute] with {
+    val domain: IndexedSeq[Minute] = (0 to 59).map(Minute(_))
+  }
+
   /** The underlying numeric value (0-59). */
   extension (minute: Minute) def value: Int = minute
 

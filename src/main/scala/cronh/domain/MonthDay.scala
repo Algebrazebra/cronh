@@ -16,6 +16,10 @@ object MonthDay {
 
   given Ordering[MonthDay] = Ordering.Int
 
+  given DomainBounds[MonthDay] with {
+    val domain: IndexedSeq[MonthDay] = (1 to 31).map(MonthDay(_))
+  }
+
   /** The underlying numeric value (1-31). */
   extension (day: MonthDay) def value: Int = day
 }
