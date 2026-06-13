@@ -7,12 +7,19 @@ object MonthDay {
 
   /** Smart constructor for MonthDay with runtime validation. */
   def apply(value: Int): MonthDay = {
-    if (value >= 1 && value <= 31) value
-    else
-      throw new IllegalArgumentException(
-        s"MonthDay must be between 1 and 31, got $value"
-      )
+    require(
+      value >= 1 && value <= 31,
+      s"MonthDay must be between 1 and 31, got $value"
+    )
+    value
   }
 
   given Ordering[MonthDay] = Ordering.Int
+
+  given DomainBounds[MonthDay] with {
+    val domain: IndexedSeq[MonthDay] = (1 to 31).map(MonthDay(_))
+  }
+
+  /** The underlying numeric value (1-31). */
+  extension (day: MonthDay) def value: Int = day
 }

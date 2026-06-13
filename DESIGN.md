@@ -2,7 +2,7 @@
 
 A living document for the `cronh` Scala 3 cron DSL. Captures the locked-in design decisions, the rejected alternatives that shaped them, the current type model, and where each implementation phase stands.
 
-> **Status snapshot (2026-06-11):** Phase 1 (domain model) is largely complete. Phases 2–8 are not yet started. The implementation matches the final plan with a few small drifts noted under [Drift from the plan](#5-drift-from-the-plan). §4 records how every known cron edge case is dispatched by the model.
+> **Status snapshot (2026-06-11):** Phases 0–8 are complete: domain model, Unix renderer, fluent DSL, phantom types, property tests, normalization, human-readable output, and polish (README, examples, compile-time literals). Phase 5b (parser round-trip) and everything under [Future / out of v1](#future--out-of-v1) remain deferred. Implementation drifts from the original plan are noted under [Drift from the plan](#5-drift-from-the-plan). §4 records how every known cron edge case is dispatched by the model.
 
 ---
 
@@ -120,6 +120,26 @@ Standard library only. `Field` is a semigroup under `++`, but `cats.Semigroup` i
 
 - **Rejected:** Baking OR/AND or impossible-date rejection into `CronExpression`'s constructor. It couples the unit-agnostic container to dialect-specific run semantics and to a calendar model the core deliberately omits.
 
+### 2.16 Phantom markers are nested; phantom parameters are covariant
+
+The Phase 4 markers live inside companion-style objects (`Status.Set`, `Status.Unset`, `DaySpec.NoDay`, `DaySpec.ByWeekday`, `DaySpec.ByMonthDay`), and `CronExpression[+Time, +Day]` is covariant in both phantoms.
+
+- **Rejected:** top-level `Set`/`Unset` traits (the plan's spelling) — a top-level `Set` in `cronh.domain` shadows `scala.collection.immutable.Set` for every file in the package.
+- **Rejected:** invariant phantoms. A directly constructed `CronExpression(...)` infers its phantoms to `Nothing`; with invariance such a value would match *no* DSL extension and need explicit `FreshCron` ascriptions everywhere. With covariance `Nothing` conforms to every state, so raw domain values remain fully DSL-usable, while `Set`/`Unset` (siblings) still exclude each other.
+
+### 2.17 Unix dialect splits ranges that end on Sunday
+
+The model orders weekdays Monday-first, so `Range(Friday, Sunday)` is valid; under Sun=0 numbering it would naively render as the inverted — and invalid — `5-0`. `UnixCronDialect` renders such ranges as the semantically identical POSIX-valid list `5-6,0` via an overridable `renderDayOfWeek` hook on `CronDialect`.
+
+- **Rejected:** rendering Sunday as `7` in range ends (Vixie accepts it, POSIX does not; it also makes one value render two ways).
+- **Rejected:** forbidding Sunday-terminated ranges in the model — they are semantically meaningful; the limitation is the dialect's, so the fix lives in the dialect (cf. §2.11).
+
+### 2.18 The Unix dialect is the default given
+
+`CronDialect`'s companion provides `given default: CronDialect = UnixCronDialect`, so `expr.toCron` works out of the box; a local given shadows it to select another dialect.
+
+- **Rejected:** requiring an explicit dialect import for every render. POSIX/Vixie is the library's declared baseline (§2.12); making the baseline ambient costs nothing and keeps quick-start friction near zero.
+
 ---
 
 ## 3. Current Type Model
@@ -159,17 +179,41 @@ object Field:
   def of[A](first: A, rest: A*): Field[A]
   def from[A](first: Term[A], rest: Term[A]*): Field[A]   // mixed-term composition
 
-// === CronExpression ===
-final case class CronExpression(
+// === CronExpression (phantoms track DSL state; no runtime cost) ===
+final case class CronExpression[+Time <: Status, +Day <: DaySpec](
   minute:     Field[Minute],
   hour:       Field[Hour],
   dayOfMonth: Field[MonthDay],
   month:      Field[Month],
   dayOfWeek:  Field[DayOfWeek]
 )
-```
+type FreshCron = CronExpression[Status.Unset, DaySpec.NoDay]
 
-Phantom-type parameters (Phase 4) will turn this into `CronExpression[Time <: Status, Day <: DaySpec]`.
+// === Normalization (cronh.domain, opt-in) ===
+trait DomainBounds[A] { def domain: IndexedSeq[A] }   // full ascending domain
+extension [A](field: Field[A])
+  def normalized(using Ordering[A], DomainBounds[A]): Field[A]
+  def isNormalized(using Ordering[A], DomainBounds[A]): Boolean
+
+// === Rendering (cronh.render) ===
+trait Render[A] { def render(value: A): String }      // per-unit token
+def renderTerm[A](term: Term[A])(using Render[A]): String
+def renderField[A](field: Field[A])(using Render[A]): String
+trait CronDialect {                                   // owns Render[DayOfWeek]
+  given dayOfWeekRender: Render[DayOfWeek]
+  final def render(expression: CronExpression[?, ?]): String
+}
+object UnixCronDialect extends CronDialect            // Sun=0; default given
+extension (e: CronExpression[?, ?])
+  def toCron(using CronDialect): String
+  def humanReadable: String
+
+// === DSL (cronh.dsl) ===
+object Schedule  // daily, hourly, weekdays, weekends, monthly, yearly, on, onDay
+// extensions: .at / .on / .onDay / .between / .in, phantom-constrained
+// literals: 9.h, 30.m, 15.dom (compile-time validated)
+// aliases: Mon..Sun, midnight, noon, Weekdays, Weekends
+```
 
 ---
 
@@ -260,11 +304,16 @@ Small, intentional or harmless differences between the final plan in `old_convo.
 
 | Topic | Plan | Current code | Verdict |
 | --- | --- | --- | --- |
-| Package layout | `cron.domain` + `cron.model` + `cron.dialect` + `cron.dsl` + `cron.render` | Flat: `cronh.domain` only | Fine for now; revisit when Phase 2/3 land. Splitting now would be premature. |
+| Package layout | `cron.domain` + `cron.model` + `cron.dialect` + `cron.dsl` + `cron.render` | Three packages: `cronh.domain`, `cronh.render` (dialects folded in), `cronh.dsl` | **Resolved at Phase 2/3.** Five packages was over-granular; dialect *is* rendering, and `model` never earned a separate namespace. |
 | Range validation site | Plan put it on `Field.range`. | Lives on `Term.Range.apply` *and* therefore implicitly on `Field.range`. | **Better than the plan.** Catches `Term.Range(5, 2)` at the raw level too. Keep. |
 | `Field.from` | Latest plan iteration suggested dropping in favor of `++`. | `Field.from` is implemented and tested. | Worth keeping for mixed-term construction without three-`++`-chains. Light surface area; revisit if it becomes redundant in practice. |
-| Validation throw style | Plan used `require(...)`. | Mixes `require` (Range) with explicit `throw new IllegalArgumentException` (Hour/Minute). | Cosmetic. Standardize on one style when convenient — `require` is shorter. |
-| `Minute(60)` test | Plan example. | `Minute(61)` test exists; `Minute(60)` boundary not explicitly covered. | Add the 60/24/32 boundary tests during Phase 1 wrap-up. |
+| Validation throw style | Plan used `require(...)`. | Standardized on `require` across `Minute`, `Hour`, `MonthDay`, `Range`. | **Resolved.** |
+| `Minute(60)` test | Plan example. | 60/24/0/32 boundary tests exist (PR #7). | **Resolved.** |
+| Phantom marker names | Top-level `Set`, `Unset`, `NoDay`, ... | Nested: `Status.Set`, `DaySpec.NoDay`, ... | Deliberate — top-level `Set` shadows `scala.Set` (§2.16). |
+| Phantom variance | Unspecified (implicitly invariant). | `CronExpression[+Time, +Day]` covariant. | Deliberate — keeps directly constructed values DSL-usable (§2.16). |
+| `monthly`/`yearly` day phantom | Unspecified. | Typed `DaySpec.ByMonthDay`: their day *is* their meaning, so `.on`/`.onDay` are conflicts; use `Schedule.onDay(...)` for other dates. | Consistent with the "no silent overwrite" rule; only `daily`'s *time* stays `Unset` per the Phase 3 decision. |
+| Normalization strength | "merges overlapping ranges" | Also merges *adjacent* runs (`1-3,4-6` → `1-6`) via full-domain enumeration (`DomainBounds`). | **Stronger than the plan**, still semantics-preserving. Keep. |
+| `.at` minute-only overload | Phase 4 sketch mentioned `.at(0.m)` after `between`. | Implemented; needs `@targetName("atMinute")` because `Hour` and `Minute` both erase to `Int`. | Erasure tax on opaque types; invisible to users. |
 
 None of these are blockers. Documenting them so future-me doesn't think they're bugs.
 
@@ -292,66 +341,66 @@ Status legend: ✅ done · 🟡 in progress · ⬜ not started · ➖ deferred
 - ✅ `CronExpression` (no phantoms yet)
 - ✅ Tests for `Minute`, `Hour`, `MonthDay`, `Month`, `DayOfWeek`, `Term`, `Field`, `CronExpression`
 - ✅ Boundary tests: `Minute(60)`, `Hour(24)`, `MonthDay(0)` and `MonthDay(32)` failure cases (some may exist — audit)
-- ⬜ Decide: keep `Field.from`, or remove once `++` chains feel natural in DSL code
+- ✅ Decide: keep `Field.from` — kept; mixed-term construction without `++` chains earns its surface area (see §7 Q1)
 
-### Phase 2 — Unix dialect renderer ⬜
+### Phase 2 — Unix dialect renderer ✅
 
-- ⬜ `Render[A]` typeclass with instances for `Minute`, `Hour`, `MonthDay`, `Month`
-- ⬜ `renderTerm[A]` and `renderField[A]` parameterized over `Render[A]`
-- ⬜ `CronDialect` trait that *provides* `Render[DayOfWeek]` (dialect-specific numbering) and renders the full expression
-- ⬜ `UnixCronDialect` (Sun=0, Mon=1, …, Sat=6)
-- ⬜ Extension: `CronExpression.toCron(using d: CronDialect): String`
-- ⬜ Acceptance tests on hand-built values (see plan §Phase 2)
+- ✅ `Render[A]` typeclass with instances for `Minute`, `Hour`, `MonthDay`, `Month`
+- ✅ `renderTerm[A]` and `renderField[A]` parameterized over `Render[A]`
+- ✅ `CronDialect` trait that *provides* `Render[DayOfWeek]` (dialect-specific numbering) and renders the full expression
+- ✅ `UnixCronDialect` (Sun=0, Mon=1, …, Sat=6; ranges ending on Sunday split into POSIX-valid lists, §2.17)
+- ✅ Extension: `CronExpression.toCron(using d: CronDialect): String` (Unix is the default given, §2.18)
+- ✅ Acceptance tests on hand-built values (`RenderTest`)
 
-Open question: where do `Render[_]` instances live? Plan says `cron.render`; a flat layout might put them next to the domain types. Decide when starting Phase 2.
+Resolved: `Render[_]` instances live in `cronh.render` (in the `Render` companion, so they're in implicit scope without imports).
 
-### Phase 3 — Fluent DSL (no phantoms) ⬜
+### Phase 3 — Fluent DSL ✅
 
-- ⬜ `Int` extensions: `.h`, `.m`, `.dom`
-- ⬜ Convenience values: `midnight`, `noon`, `Weekdays`, `Weekends`, short DayOfWeek aliases (`Mon`, `Tue`, …)
-- ⬜ `Schedule` entry points: `daily`, `hourly`, `weekdays`, `weekends`, `monthly`, `yearly`, `on(...)`, `onDay(...)`
-- ⬜ Extensions on `CronExpression`: `.at`, `.on`, `.onDay`, `.between`, `.in`
+- ✅ `Int` extensions: `.h`, `.m`, `.dom` (implemented directly as compile-time-validated inline defs, see Phase 8)
+- ✅ Convenience values: `midnight`, `noon`, `Weekdays`, `Weekends`, short DayOfWeek aliases (`Mon`, `Tue`, …)
+- ✅ `Schedule` entry points: `daily`, `hourly`, `weekdays`, `weekends`, `monthly`, `yearly`, `on(...)`, `onDay(...)`
+- ✅ Extensions on `CronExpression`: `.at`, `.on`, `.onDay`, `.between`, `.in`
 
-Decision to lock in before coding: does `Schedule.daily` set `Time = Set` (so `.at` is a conflict) or `Time = Unset` with sensible defaults? The plan recommends `Unset` with default minute/hour = 0, treating `daily` as "every day, sensible default time" that the user can still override with `.at`. Carry that into Phase 4.
+Decision locked as planned: `Schedule.daily` is `Time = Unset` with default minute/hour = 0 — "every day, sensible default time", overridable with `.at`. (`monthly`/`yearly` fix their *day* as `ByMonthDay`; see §5.)
 
-### Phase 4 — Phantom types ⬜
+### Phase 4 — Phantom types ✅
 
-- ⬜ Marker traits: `Status`, `Set`, `Unset`, `DaySpec`, `NoDay`, `ByWeekday`, `ByMonthDay`
-- ⬜ Parameterize `CronExpression[Time <: Status, Day <: DaySpec]`
-- ⬜ Type alias `FreshCron = CronExpression[Unset, NoDay]`
-- ⬜ Re-type each extension with phantom constraints
-- ⬜ `compileErrors(...)` tests for double-set and DoW/DoM conflict
-- ⬜ `between` does not flip `Time` (constrains hour, leaves minute settable via `.at(0.m)`)
+- ✅ Marker traits: `Status` (`Status.Set`, `Status.Unset`), `DaySpec` (`DaySpec.NoDay`, `DaySpec.ByWeekday`, `DaySpec.ByMonthDay`) — nested, §2.16
+- ✅ Parameterize `CronExpression[+Time <: Status, +Day <: DaySpec]`
+- ✅ Type alias `FreshCron = CronExpression[Status.Unset, DaySpec.NoDay]`
+- ✅ Re-type each extension with phantom constraints
+- ✅ `compileErrors(...)` tests for double-set and DoW/DoM conflict (`PhantomTest`, with a positive control verifying the snippets see the right scope)
+- ✅ `between` does not flip `Time` (constrains hour, leaves minute settable via `.at(30.m)` — minute-only `.at` overload)
 
-### Phase 5 — Property-based testing ⬜
+### Phase 5 — Property-based testing ✅ (5b deferred)
 
-- ⬜ ScalaCheck generators for `Minute`, `Hour`, `MonthDay`, `Month`, `DayOfWeek`
-- ⬜ Generators for `Term[A]` and `Field[A]`
-- ⬜ Properties: render determinism, five-field output structure, `Field.all → "*"`, range bounds preserved
-- ⬜ Semigroup associativity: `(f1 ++ f2) ++ f3 == f1 ++ (f2 ++ f3)`
+- ✅ ScalaCheck generators for `Minute`, `Hour`, `MonthDay`, `Month`, `DayOfWeek`
+- ✅ Generators for `Term[A]` and `Field[A]`
+- ✅ Properties: render determinism, five-field output structure, `Field.all → "*"`, range bounds preserved
+- ✅ Semigroup associativity: `(f1 ++ f2) ++ f3 == f1 ++ (f2 ++ f3)`
 - ➖ Phase 5b: cron-string parser + round-trip `parse(c.toCron) == Right(c)` (deferred — significant work, defer past v1)
 
-### Phase 6 — Field normalization ⬜ (optional)
+### Phase 6 — Field normalization ✅
 
-- ⬜ `DomainBounds[A]` typeclass
-- ⬜ `Field[A].normalized(using Ordering[A], DomainBounds[A])` removes duplicates, merges overlapping ranges, collapses to `Field.all` when total
-- ⬜ Collapse any field containing `Term.All` to `Field.all` (Vixie OR semantics; see §4.4)
-- ⬜ `Field[A].isNormalized` predicate
-- ⬜ Idempotence + semantic-equivalence tests
+- ✅ `DomainBounds[A]` typeclass (full ascending domain enumeration; domains are ≤ 60 values, so this beats a successor/predecessor API)
+- ✅ `Field[A].normalized(using Ordering[A], DomainBounds[A])` removes duplicates, merges overlapping *and adjacent* ranges, collapses to `Field.all` when total
+- ✅ Collapse any field containing `Term.All` to `Field.all` (Vixie OR semantics; see §4.4)
+- ✅ `Field[A].isNormalized` predicate
+- ✅ Idempotence + semantic-equivalence tests (`NormalizationTest`)
 
-### Phase 7 — Human-readable output ⬜
+### Phase 7 — Human-readable output ✅
 
-- ⬜ `CronExpression.humanReadable: String`
-- ⬜ Pattern-match each field, build natural-language phrases
-- ⬜ Special cases: `Field.range(Mon, Fri) → "weekdays"`, `Field.of(Sat, Sun) → "weekends"`
-- ⬜ Time formatting (12h with AM/PM by default; consider 24h option)
+- ✅ `CronExpression.humanReadable: String` (in `cronh.render`; dialect-independent)
+- ✅ Pattern-match each field, build natural-language phrases; both day fields set reads as "X or Y" (Vixie OR, §4.5)
+- ✅ Special cases: `Field.range(Mon, Fri) → "weekdays"`, `Field.of(Sat, Sun) → "weekends"`
+- ✅ Time formatting: 12h with AM/PM by default; a 24h option remains open for a later pass
 
-### Phase 8 — Polish ⬜
+### Phase 8 — Polish ✅
 
-- ⬜ Scaladoc with examples on every public symbol
-- ⬜ README rewrite: before/after comparison, quick-start, DSL reference table
-- ⬜ `examples/` directory with realistic schedules
-- ⬜ Compile-time literal validation: `inline def h: Hour` with `compiletime.error` for out-of-range literals
+- ✅ Scaladoc with examples on every public symbol
+- ✅ README rewrite: before/after comparison, quick-start, DSL reference table
+- ✅ `examples/` directory with realistic schedules (illustrative; mirrored by acceptance tests so the expected strings stay honest)
+- ✅ Compile-time literal validation: `inline def h: Hour` with `compiletime.error` for out-of-range literals (plus `requireConst` so non-literals fail with a clear message)
 
 ### Future / out of v1 ➖
 
@@ -367,11 +416,12 @@ Decision to lock in before coding: does `Schedule.daily` set `Time = Set` (so `.
 
 Tracked here so they're not lost between sessions.
 
-1. **Should `Field.from` survive?** Last plan iteration suggested replacing it with `++` chains. Current code keeps it. Revisit after a few real DSL extensions are written and we can see whether `++` is ergonomic enough alone.
-2. **Package layout when Phase 2/3 land.** The plan splits into `cronh.{domain, model, dialect, dsl, render}`. Current layout is flat (`cronh.domain`). At which file count is the split warranted? Suggest splitting when the count crosses ~15 source files or when DSL and rendering visibly fight for namespace.
-3. **Phantom-type API ergonomics.** When errors fire (`compileErrors(...)`), do messages reasonably guide the user? If not, consider `@implicitNotFound`-style helpers or `scala.compiletime.error` shims.
-4. **`between` semantics.** Phase 3 plan: `.between(9.h, 17.h)` sets the hour to `Range(9, 17)` and does *not* flip `Time = Set`. Confirm with a usage example before locking — there may be a cleaner alternative where `.between(...)` returns a value that requires a follow-on `.at(m.m)` before `.toCron` is callable.
-5. **Validation style.** `require(...)` vs. `throw new IllegalArgumentException(...)`. Pick one and refactor for consistency. Lean toward `require` (shorter, more idiomatic).
+1. ~~**Should `Field.from` survive?**~~ **Resolved: kept.** The DSL extensions ended up using `Field.of`/`Field.range`/`Field.single` internally, but `Field.from` remains the only one-call way to build a mixed-shape field (and the test generators lean on it). Revisit only if it rots.
+2. ~~**Package layout when Phase 2/3 land.**~~ **Resolved: split into `cronh.{domain, render, dsl}`.** Dialects folded into `render`; no separate `model` package. See §5.
+3. **Phantom-type API ergonomics.** Current failure mode is a missing-extension error ("value at is not a member of CronExpression[Status.Set, ...]"), which names the offending state but doesn't say *why*. Acceptable for now; revisit with `@implicitNotFound`-style helpers or `compiletime.error` shims if users stumble.
+4. ~~**`between` semantics.**~~ **Resolved as planned:** `.between(9.h, 17.h)` sets the hour range and does not flip `Time`; a minute-only `.at(30.m)` overload (via `@targetName`, see §5) provides the follow-on. The stricter "must call `.at` before `.toCron`" alternative was dropped — a renderable `0 9-17 * * 1-5` is a perfectly meaningful schedule on its own.
+5. ~~**Validation style.**~~ **Resolved: standardized on `require`** across all smart constructors.
+6. **24-hour time formatting for `humanReadable`.** Currently 12h AM/PM only. Add a config knob (or a locale-aware formatter) if demand exists.
 
 ---
 

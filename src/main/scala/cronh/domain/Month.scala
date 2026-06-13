@@ -18,4 +18,8 @@ enum Month private (val value: Int) {
 
 object Month {
   given Ordering[Month] = Ordering.by(_.value)
+
+  given DomainBounds[Month] with {
+    val domain: IndexedSeq[Month] = Month.values.toIndexedSeq
+  }
 }

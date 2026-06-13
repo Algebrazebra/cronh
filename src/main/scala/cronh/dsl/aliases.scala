@@ -1,0 +1,38 @@
+package cronh.dsl
+
+import cronh.domain.{DayOfWeek, Field, Hour}
+
+/** Short alias for [[cronh.domain.DayOfWeek.Monday]]. */
+val Mon: DayOfWeek = DayOfWeek.Monday
+
+/** Short alias for [[cronh.domain.DayOfWeek.Tuesday]]. */
+val Tue: DayOfWeek = DayOfWeek.Tuesday
+
+/** Short alias for [[cronh.domain.DayOfWeek.Wednesday]]. */
+val Wed: DayOfWeek = DayOfWeek.Wednesday
+
+/** Short alias for [[cronh.domain.DayOfWeek.Thursday]]. */
+val Thu: DayOfWeek = DayOfWeek.Thursday
+
+/** Short alias for [[cronh.domain.DayOfWeek.Friday]]. */
+val Fri: DayOfWeek = DayOfWeek.Friday
+
+/** Short alias for [[cronh.domain.DayOfWeek.Saturday]]. */
+val Sat: DayOfWeek = DayOfWeek.Saturday
+
+/** Short alias for [[cronh.domain.DayOfWeek.Sunday]]. */
+val Sun: DayOfWeek = DayOfWeek.Sunday
+
+/** Midnight (hour 0), e.g. `Schedule.daily.at(midnight)`. */
+val midnight: Hour = Hour(0)
+
+/** Noon (hour 12), e.g. `Schedule.on(Mon, Fri).at(noon)`. */
+val noon: Hour = Hour(12)
+
+/** Monday through Friday, e.g. `Schedule.daily.on(Weekdays)`. */
+val Weekdays: Field[DayOfWeek] =
+  Field.range(DayOfWeek.Monday, DayOfWeek.Friday)
+
+/** Saturday and Sunday, e.g. `Schedule.daily.on(Weekends)`. */
+val Weekends: Field[DayOfWeek] =
+  Field.of(DayOfWeek.Saturday, DayOfWeek.Sunday)

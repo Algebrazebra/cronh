@@ -11,4 +11,8 @@ enum DayOfWeek {
 
 object DayOfWeek {
   given Ordering[DayOfWeek] = Ordering.by(_.ordinal)
+
+  given DomainBounds[DayOfWeek] with {
+    val domain: IndexedSeq[DayOfWeek] = DayOfWeek.values.toIndexedSeq
+  }
 }
