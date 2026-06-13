@@ -12,8 +12,12 @@ extension (inline value: Int) {
     */
   inline def h: Hour = {
     requireConst(value)
-    inline if (value >= 0 && value <= 23) Hour(value)
-    else error("Hour must be between 0 and 23, got " + codeOf(value))
+    inline if (value >= Hour.MinValue && value <= Hour.MaxValue) Hour(value)
+    else
+      error(
+        "Hour must be between " + Hour.MinValue.toString + " and " +
+          Hour.MaxValue.toString + ", got " + codeOf(value)
+      )
   }
 
   /** This minute of the hour, validated at compile time: `30.m` compiles,
@@ -22,8 +26,13 @@ extension (inline value: Int) {
     */
   inline def m: Minute = {
     requireConst(value)
-    inline if (value >= 0 && value <= 59) Minute(value)
-    else error("Minute must be between 0 and 59, got " + codeOf(value))
+    inline if (value >= Minute.MinValue && value <= Minute.MaxValue)
+      Minute(value)
+    else
+      error(
+        "Minute must be between " + Minute.MinValue.toString + " and " +
+          Minute.MaxValue.toString + ", got " + codeOf(value)
+      )
   }
 
   /** This day of the month, validated at compile time: `15.dom` compiles,
@@ -32,7 +41,12 @@ extension (inline value: Int) {
     */
   inline def dom: MonthDay = {
     requireConst(value)
-    inline if (value >= 1 && value <= 31) MonthDay(value)
-    else error("MonthDay must be between 1 and 31, got " + codeOf(value))
+    inline if (value >= MonthDay.MinValue && value <= MonthDay.MaxValue)
+      MonthDay(value)
+    else
+      error(
+        "MonthDay must be between " + MonthDay.MinValue.toString + " and " +
+          MonthDay.MaxValue.toString + ", got " + codeOf(value)
+      )
   }
 }

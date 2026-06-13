@@ -4,6 +4,14 @@ package cronh.domain
 opaque type Hour = Int
 object Hour {
 
+  /** Smallest valid hour. `inline` so it is a compile-time constant usable from
+    * the `9.h` literal checks, keeping a single source of truth for the bounds.
+    */
+  inline val MinValue = 0
+
+  /** Largest valid hour. See [[MinValue]]. */
+  inline val MaxValue = 23
+
   /** Smart constructor for Hour with runtime checks.
     *
     * Examples:
@@ -12,8 +20,8 @@ object Hour {
     */
   def apply(value: Int): Hour = {
     require(
-      value >= 0 && value <= 23,
-      s"Hour must be between 0 and 23, got $value"
+      value >= MinValue && value <= MaxValue,
+      s"Hour must be between $MinValue and $MaxValue, got $value"
     )
     value
   }
@@ -21,7 +29,7 @@ object Hour {
   given Ordering[Hour] = Ordering.Int
 
   given DomainBounds[Hour] with {
-    val domain: IndexedSeq[Hour] = (0 to 23).map(Hour(_))
+    val domain: IndexedSeq[Hour] = (MinValue to MaxValue).map(Hour(_))
   }
 
   /** The underlying numeric value (0-23). */
