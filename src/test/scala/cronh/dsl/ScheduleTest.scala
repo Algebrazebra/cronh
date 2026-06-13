@@ -60,6 +60,13 @@ class ScheduleTest extends FunSuite {
     assertEquals(Schedule.daily.on(Weekdays).at(9.h).toCron, "0 9 * * 1-5")
   }
 
+  test(".on(Field.all) is rejected rather than a no-op weekday constraint") {
+    val ex = intercept[IllegalArgumentException](
+      Schedule.daily.on(cronh.domain.Field.all)
+    )
+    assert(ex.getMessage.contains("wildcard"), ex.getMessage)
+  }
+
   test(".at(midnight) uses the midnight alias") {
     assertEquals(Schedule.daily.at(midnight).toCron, "0 0 * * *")
   }

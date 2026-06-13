@@ -48,9 +48,20 @@ extension [T <: Status](expression: CronExpression[T, DaySpec.NoDay]) {
 
   /** Restricts the schedule to a prebuilt day-of-week field, e.g.
     * `.on(Weekdays)` or `.on(Weekends)`.
+    *
+    * The field must actually constrain the day: a wildcard (`Field.all`, or any
+    * field containing `Term.All`) is rejected, because marking the result
+    * `ByWeekday` while matching every day would be a phantom claim with no
+    * matching constraint — and would spuriously block a later `.onDay`.
     */
-  def on(days: Field[DayOfWeek]): CronExpression[T, DaySpec.ByWeekday] =
+  def on(days: Field[DayOfWeek]): CronExpression[T, DaySpec.ByWeekday] = {
+    require(
+      !days.terms.contains(Term.All),
+      "on(...) needs specific weekdays, not a wildcard field; " +
+        "leave the day unconstrained instead of passing Field.all"
+    )
     expression.copy(dayOfWeek = days).retag[T, DaySpec.ByWeekday]
+  }
 
   /** Restricts the schedule to these days of the month. Mutually exclusive with
     * [[on]]: setting both is a compile error (DESIGN.md §2.15).
