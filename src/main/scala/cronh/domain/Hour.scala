@@ -1,6 +1,15 @@
 package cronh.domain
 
-/** A cron hour. Valid values are 0-23. */
+/** A cron hour. Valid values are 0-23.
+  *
+  * Because `Hour` is an opaque alias for `Int`, it shares `Int`'s universal
+  * equality: under default (non-strict) equality a cross-unit comparison such
+  * as `Hour(5) == Minute(5)` compiles and returns `true`. To turn such
+  * mismatches into compile errors, enable `-language:strictEquality`; the
+  * same-type [[scala.CanEqual]] instance in the companion then permits only
+  * `Hour`-to-`Hour` comparisons. Without that flag, compare the underlying
+  * `.value`s explicitly when crossing units.
+  */
 opaque type Hour = Int
 object Hour {
 
@@ -19,6 +28,11 @@ object Hour {
   }
 
   given Ordering[Hour] = Ordering.Int
+
+  /** Restricts equality to `Hour`-to-`Hour` under `-language:strictEquality`,
+    * so `Hour(5) == Minute(5)` no longer compiles.
+    */
+  given CanEqual[Hour, Hour] = CanEqual.derived
 
   given DomainBounds[Hour] with {
     val domain: IndexedSeq[Hour] = (0 to 23).map(Hour(_))
