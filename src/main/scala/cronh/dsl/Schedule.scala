@@ -20,8 +20,12 @@ object Schedule {
   def daily: FreshCron =
     CronExpression(zeroMinute, zeroHour, Field.all, Field.all, Field.all)
 
-  /** Every hour, on the hour, by default. */
-  def hourly: FreshCron =
+  /** Every hour, on the hour, by default. The hour field is already at its
+    * widest, so the time is [[Status.HourSet]]: refine only the minute with
+    * `.at(30.m)`; `.at(hour)` (which would silently make it once-daily) is a
+    * compile error.
+    */
+  def hourly: CronExpression[Status.HourSet, DaySpec.NoDay] =
     CronExpression(zeroMinute, Field.all, Field.all, Field.all, Field.all)
 
   /** Monday through Friday at 00:00 by default. */
