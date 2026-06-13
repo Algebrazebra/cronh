@@ -1,8 +1,13 @@
 package cronh.render
 
-import cronh.domain.{DayOfWeek, Field, Term}
+import cronh.domain.DayOfWeek
 
 /** The classic Unix/Vixie dialect: Sunday = 0, Monday = 1, ..., Saturday = 6.
+  *
+  * Ranges ending on Sunday (e.g. `Friday-Sunday`) would naively render as the
+  * inverted, invalid `5-0`; the shared [[CronDialect.renderDayOfWeek]] splits
+  * them at the term level before numbering, so this dialect emits the valid
+  * `5-6,0` without needing its own override.
   */
 object UnixCronDialect extends CronDialect {
 
@@ -17,22 +22,4 @@ object UnixCronDialect extends CronDialect {
       case DayOfWeek.Saturday  => 6
     }).toString
   }
-
-  /** The model orders weekdays Monday-first, so a range ending on Sunday (e.g.
-    * `Friday-Sunday`) would naively render as the inverted — and invalid —
-    * `5-0`. Such ranges are split into the equivalent POSIX-valid list instead:
-    * `5-6,0`.
-    */
-  override protected def renderDayOfWeek(field: Field[DayOfWeek]): String =
-    field.terms
-      .map {
-        case Term.Range(from, DayOfWeek.Sunday) =>
-          from match {
-            case DayOfWeek.Sunday   => "0"
-            case DayOfWeek.Saturday => "6,0"
-            case earlier            => s"${dayOfWeekRender.render(earlier)}-6,0"
-          }
-        case term => renderTerm(term)
-      }
-      .mkString(",")
 }
