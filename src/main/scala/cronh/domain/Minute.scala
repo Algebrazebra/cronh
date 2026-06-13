@@ -5,6 +5,15 @@ opaque type Minute = Int
 
 object Minute {
 
+  /** Smallest valid minute. `inline` so it is a compile-time constant usable
+    * from the `30.m` literal checks, keeping a single source of truth for the
+    * bounds.
+    */
+  inline val MinValue = 0
+
+  /** Largest valid minute. See [[MinValue]]. */
+  inline val MaxValue = 59
+
   /** Smart constructor for Minute with runtime checks.
     *
     * Examples:
@@ -13,8 +22,8 @@ object Minute {
     */
   def apply(value: Int): Minute = {
     require(
-      value >= 0 && value <= 59,
-      s"Minute must be between 0 and 59, got $value"
+      value >= MinValue && value <= MaxValue,
+      s"Minute must be between $MinValue and $MaxValue, got $value"
     )
     value
   }
@@ -22,7 +31,7 @@ object Minute {
   given Ordering[Minute] = Ordering.Int
 
   given DomainBounds[Minute] with {
-    val domain: IndexedSeq[Minute] = (0 to 59).map(Minute(_))
+    val domain: IndexedSeq[Minute] = (MinValue to MaxValue).map(Minute(_))
   }
 
   /** The underlying numeric value (0-59). */
