@@ -74,11 +74,10 @@ private object HumanReadable {
     }
 
   private def isWeekend(terms: List[Term[DayOfWeek]]): Boolean = {
-    val weekend: scala.collection.Set[Term[DayOfWeek]] =
-      scala.collection.Set(
-        Term.Single(DayOfWeek.Saturday),
-        Term.Single(DayOfWeek.Sunday)
-      )
+    val weekend = Set[Term[DayOfWeek]](
+      Term.Single(DayOfWeek.Saturday),
+      Term.Single(DayOfWeek.Sunday)
+    )
     terms.toSet == weekend ||
     terms == List(Term.Range(DayOfWeek.Saturday, DayOfWeek.Sunday))
   }
