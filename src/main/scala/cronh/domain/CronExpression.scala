@@ -15,6 +15,16 @@ package cronh.domain
   * (whose phantoms infer to `Nothing`) conforms to every state and remains
   * usable with the DSL. Equality ignores the phantoms: two expressions with the
   * same five fields are equal.
+  *
+  * '''The phantoms guard the DSL surface, not this data type.''' Because this
+  * is a public case class (kept a storable, constructible plain value,
+  * DESIGN.md §2.9), the synthesized `apply` and `copy` are raw construction:
+  * they set the fields you give them and leave the phantom tags untouched. So
+  * `expr.copy(hour = ...)` on a `Status.Set` value yields another `Status.Set`
+  * value with a different hour — the flag no longer reflects how the time was
+  * established. Treat `copy`/`apply` as a deliberate escape hatch (DESIGN.md
+  * §2.10); reach for the `Schedule` DSL when you want the no-silent-overwrite
+  * guarantees.
   */
 final case class CronExpression[+Time <: Status, +Day <: DaySpec](
     minute: Field[Minute],
