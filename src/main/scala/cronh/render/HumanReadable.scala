@@ -52,12 +52,16 @@ private object HumanReadable {
       case _               =>
         Some(s"on day ${describe(dayOfMonth)(_.value.toString)} of the month")
     }
-    val weekDays = dayOfWeek.terms match {
+    // Normalize first so idioms are recognized structurally *and*
+    // semantically: e.g. `on(Mon, Tue, Wed, Thu, Fri)` collapses to
+    // `Range(Monday, Friday)` and reads as "on weekdays".
+    val weekField = dayOfWeek.normalized
+    val weekDays = weekField.terms match {
       case Term.All :: Nil                                       => None
       case Term.Range(DayOfWeek.Monday, DayOfWeek.Friday) :: Nil =>
         Some("on weekdays")
       case terms if isWeekend(terms) => Some("on weekends")
-      case _ => Some(s"on ${describe(dayOfWeek)(_.toString)}")
+      case _ => Some(s"on ${describe(weekField)(_.toString)}")
     }
     (monthDays, weekDays) match {
       case (None, None) => List("every day")
