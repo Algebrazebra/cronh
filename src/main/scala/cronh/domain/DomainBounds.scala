@@ -11,4 +11,10 @@ trait DomainBounds[A] {
 
   /** Every value of `A`, in ascending order consistent with `Ordering[A]`. */
   def domain: IndexedSeq[A]
+
+  /** Each domain value mapped to its ascending index. Computed once per
+    * instance (the instances are singletons) so [[Field.normalized]] does not
+    * rebuild it on every call.
+    */
+  lazy val indexOf: Map[A, Int] = domain.zipWithIndex.toMap
 }
