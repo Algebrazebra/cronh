@@ -1,6 +1,6 @@
 package cronh.dsl
 
-import cronh.domain.{DayOfWeek, Field, Hour}
+import cronh.domain.{DayOfWeek, Hour}
 
 /** Short alias for [[cronh.domain.DayOfWeek.Monday]]. */
 val Mon: DayOfWeek = DayOfWeek.Monday
@@ -30,9 +30,9 @@ val midnight: Hour = Hour(0)
 val noon: Hour = Hour(12)
 
 /** Monday through Friday, e.g. `Schedule.daily.on(Weekdays)`. */
-val Weekdays: Field[DayOfWeek] =
-  Field.range(DayOfWeek.Monday, DayOfWeek.Friday)
+val Weekdays: WeekdaySelector =
+  WeekdaySelector.range(DayOfWeek.Monday, DayOfWeek.Friday)
 
 /** Saturday and Sunday, e.g. `Schedule.daily.on(Weekends)`. */
-val Weekends: Field[DayOfWeek] =
-  Field.of(DayOfWeek.Saturday, DayOfWeek.Sunday)
+val Weekends: WeekdaySelector =
+  WeekdaySelector(DayOfWeek.Saturday, DayOfWeek.Sunday)
