@@ -16,13 +16,19 @@ import cronh.domain.{Hour, Minute, MonthDay}
 private[dsl] object LiteralMacros {
 
   def hImpl(expr: Expr[Int])(using Quotes): Expr[Hour] =
-    checked(expr, 0, 23, "Hour", "h")(v => '{ Hour(${ Expr(v) }) })
+    checked(expr, Hour.MinValue, Hour.MaxValue, "Hour", "h")(v =>
+      '{ Hour(${ Expr(v) }) }
+    )
 
   def mImpl(expr: Expr[Int])(using Quotes): Expr[Minute] =
-    checked(expr, 0, 59, "Minute", "m")(v => '{ Minute(${ Expr(v) }) })
+    checked(expr, Minute.MinValue, Minute.MaxValue, "Minute", "m")(v =>
+      '{ Minute(${ Expr(v) }) }
+    )
 
   def domImpl(expr: Expr[Int])(using Quotes): Expr[MonthDay] =
-    checked(expr, 1, 31, "MonthDay", "dom")(v => '{ MonthDay(${ Expr(v) }) })
+    checked(expr, MonthDay.MinValue, MonthDay.MaxValue, "MonthDay", "dom")(v =>
+      '{ MonthDay(${ Expr(v) }) }
+    )
 
   private def checked[A](
       expr: Expr[Int],
