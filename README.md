@@ -1,33 +1,67 @@
-# cronh
+I want a big header with the name and the tagline
 
-A Scala 3 library for describing cron schedules in code that **reads aloud
-naturally** and is **caught wrong at compile time** when it would otherwise be
-a 3 AM page.
 
-## Before / after
+# CRONH
 
-```scala
-// Before: write-only string. Is this 2:30 PM? Are weekdays 1-5 or 0-4?
-val schedule = "30 14 * * 1-5"
 
-// After: reads like the schedule it is.
-val schedule = Schedule.weekdays.at(14.h, 30.m).toCron  // "30 14 * * 1-5"
+the _h_ stands for human-friendly
+
+
+<br /> 
+
+// badges
+
+## Intro
+
+This library lets you define cron schedules that **you can actually read**.
+
+Consider the following:
+```scala 3
+// What does this mean?
+val cron = "30 14 * * 1-5"
+
+// This one is self-explanatory
+val cronh = Schedule.weekdays.at(14.h, 30.m).toCron
 ```
+
+Both values, `cron` and `cronh`, represent the same schedule.
+Which definition do you find more readable?
+
+What's more, you can do this type-safely.
+Not a big surprise for a Scala library, isn't it?
+But it does mean that we can catch a lot of errors at compile time that might otherwise be a wrong or missed job execution.
+This includes things that are legal cron but are impossible schedules such `* * 30 2 *` (every minute on February 30).
+
 
 ## Quick start
 
-```scala
-import cronh.dsl.*
-import cronh.render.*
+Install the library by adding it to your `build.sbt`:
+// TODO
+```build.sbt
+libraryDependencies += "io.github.algebrazebra" %% "cronh" % "<insert latest version>"
+```
 
-Schedule.daily.at(14.h, 30.m).toCron        // "30 14 * * *"
-Schedule.weekdays.at(9.h).toCron            // "0 9 * * 1-5"
-Schedule.on(Mon, Fri).at(noon).toCron       // "0 12 * * 1,5"
+Then using it is quite straightforward:
+
+```Scala3
+import cronh.dsl.*
+
+Schedule.daily.at(14.h, 30.m).toCron         // "30 14 * * *"
+Schedule.weekdays.at(9.h).toCron             // "0 9 * * 1-5"
+Schedule.on(Mon, Fri).at(noon).toCron        // "0 12 * * 1,5"
 Schedule.daily.on(Mon to Fri).at(9.h).toCron // "0 9 * * 1-5"
-Schedule.weekdays.between(9.h, 17.h).toCron // "0 9-17 * * 1-5"
+Schedule.weekdays.between(9.h, 17.h).toCron  // "0 9-17 * * 1-5"
+
+
+import cronh.render.*
 
 Schedule.weekdays.at(9.h).humanReadable     // "At 9:00 AM, on weekdays"
 ```
+
+usage examples (insert codeblock)
+
+Examples of what won't work because compile time safety: (insert codeblock)
+
 
 ## Caught at compile time
 
