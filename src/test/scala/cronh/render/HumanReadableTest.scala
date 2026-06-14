@@ -27,6 +27,13 @@ class HumanReadableTest extends FunSuite {
     )
   }
 
+  test("an explicit Monday-through-Friday list reads as weekdays") {
+    assertEquals(
+      Schedule.on(Mon, Tue, Wed, Thu, Fri).at(9.h).humanReadable,
+      "At 9:00 AM, on weekdays"
+    )
+  }
+
   test("weekends are recognized") {
     assertEquals(
       Schedule.weekends.humanReadable,
