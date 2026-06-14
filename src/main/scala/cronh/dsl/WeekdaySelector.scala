@@ -15,13 +15,24 @@ import cronh.domain.{DayOfWeek, Field}
   */
 opaque type WeekdaySelector = Field[DayOfWeek]
 
+extension (from: DayOfWeek) {
+
+  /** Inclusive run of weekdays in Scala range style, e.g. `Mon to Fri`.
+    * Equivalent to `WeekdaySelector.range(from, to)`.
+    */
+  infix def to(to: DayOfWeek): WeekdaySelector =
+    WeekdaySelector.range(from, to)
+}
+
 object WeekdaySelector {
 
   /** One or more specific weekdays, e.g. `WeekdaySelector(Mon, Wed, Fri)`. */
   def apply(first: DayOfWeek, rest: DayOfWeek*): WeekdaySelector =
     Field.of(first, rest*)
 
-  /** An inclusive run of weekdays, e.g. `WeekdaySelector.range(Mon, Fri)`. */
+  /** An inclusive run of weekdays, e.g. `WeekdaySelector.range(Mon, Fri)`, or in
+    * Scala range style `Mon to Fri` (see the top-level `to` extension).
+    */
   def range(from: DayOfWeek, to: DayOfWeek): WeekdaySelector =
     Field.range(from, to)
 
