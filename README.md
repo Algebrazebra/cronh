@@ -23,6 +23,7 @@ import cronh.render.*
 Schedule.daily.at(14.h, 30.m).toCron        // "30 14 * * *"
 Schedule.weekdays.at(9.h).toCron            // "0 9 * * 1-5"
 Schedule.on(Mon, Fri).at(noon).toCron       // "0 12 * * 1,5"
+Schedule.daily.on(Mon to Fri).at(9.h).toCron // "0 9 * * 1-5"
 Schedule.weekdays.between(9.h, 17.h).toCron // "0 9-17 * * 1-5"
 
 Schedule.weekdays.at(9.h).humanReadable     // "At 9:00 AM, on weekdays"
@@ -63,12 +64,14 @@ unrepresentable in the DSL.
 | `.at(14.h, 30.m)` | sets the time of day (once — twice is a compile error) |
 | `.at(9.h)` | sets the hour, on the hour |
 | `.between(9.h, 17.h)` | constrains the hour to a range; minute still settable via `.at(30.m)` |
-| `.on(Mon, Fri)` / `.on(Weekdays)` | constrains weekdays |
+| `.on(Mon, Fri)` / `.on(Mon to Fri)` / `.on(Weekdays)` | constrains weekdays (list or inclusive range) |
 | `.onDay(15.dom)` | constrains days of the month |
 | `.in(Month.June)` | constrains months |
 
 Conveniences: `midnight`, `noon`, `Weekdays`, `Weekends`, and the day aliases
-`Mon` … `Sun`.
+`Mon` … `Sun` (with long forms `Monday` … `Sunday`). Adjacent weekdays compose
+into an inclusive range with `to`, mirroring the stdlib `1 to 5` convention:
+`Mon to Fri` or `Monday to Friday` both render as `1-5`.
 
 ## Under the hood
 
