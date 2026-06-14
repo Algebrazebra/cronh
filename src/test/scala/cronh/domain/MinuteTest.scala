@@ -18,4 +18,12 @@ class MinuteTest extends ScalaCheckSuite {
     intercept[IllegalArgumentException](Minute(-1))
   }
 
+  test("cross-unit comparison is false at runtime") {
+    // As nominal case classes, units no longer share Int's universal equality,
+    // so a same-numeric cross-unit comparison is false rather than true.
+    assert(!Minute(5).equals(Hour(5)))
+    assert(!Minute(5).equals(MonthDay(5)))
+    assert(Minute(5) == Minute(5))
+  }
+
 }
