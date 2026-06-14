@@ -17,7 +17,7 @@ object Schedule {
   private val firstDay = Field.single(MonthDay(1))
 
   /** Every day at 00:00 by default; override the time with `.at`. */
-  def daily: FreshCron =
+  val daily: FreshCron =
     CronExpression(zeroMinute, zeroHour, Field.all, Field.all, Field.all)
 
   /** Every hour, on the hour, by default. The hour field is already at its
@@ -30,20 +30,20 @@ object Schedule {
 
   /** Monday through Friday at 00:00 by default. */
   def weekdays: CronExpression[Status.Unset, DaySpec.ByWeekday] =
-    CronExpression(zeroMinute, zeroHour, Field.all, Field.all, Weekdays)
+    CronExpression(zeroMinute, zeroHour, Field.all, Field.all, Weekdays.toField)
 
   /** Saturday and Sunday at 00:00 by default. */
   def weekends: CronExpression[Status.Unset, DaySpec.ByWeekday] =
-    CronExpression(zeroMinute, zeroHour, Field.all, Field.all, Weekends)
+    CronExpression(zeroMinute, zeroHour, Field.all, Field.all, Weekends.toField)
 
   /** The first of every month at 00:00 by default. For other days of the month
     * use [[onDay]].
     */
-  def monthly: CronExpression[Status.Unset, DaySpec.ByMonthDay] =
+  val monthly: CronExpression[Status.Unset, DaySpec.ByMonthDay] =
     CronExpression(zeroMinute, zeroHour, firstDay, Field.all, Field.all)
 
   /** Every January 1st at 00:00 by default. */
-  def yearly: CronExpression[Status.Unset, DaySpec.ByMonthDay] =
+  val yearly: CronExpression[Status.Unset, DaySpec.ByMonthDay] =
     CronExpression(
       zeroMinute,
       zeroHour,

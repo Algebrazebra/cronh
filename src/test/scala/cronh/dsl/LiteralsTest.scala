@@ -35,7 +35,9 @@ class LiteralsTest extends FunSuite {
     assert(compileErrors("-1.m").nonEmpty)
   }
 
-  test("non-literal arguments are compile errors") {
-    assert(compileErrors("val x = 9; x.h").nonEmpty)
+  test("non-literal arguments fail with a friendly message") {
+    val errors = compileErrors("val x = 9; x.h")
+    assert(errors.contains("requires an integer literal"), errors)
+    assert(!errors.contains("inline if"), errors)
   }
 }

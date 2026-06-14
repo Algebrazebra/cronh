@@ -27,6 +27,13 @@ class HumanReadableTest extends FunSuite {
     )
   }
 
+  test("an explicit Monday-through-Friday list reads as weekdays") {
+    assertEquals(
+      Schedule.on(Mon, Tue, Wed, Thu, Fri).at(9.h).humanReadable,
+      "At 9:00 AM, on weekdays"
+    )
+  }
+
   test("weekends are recognized") {
     assertEquals(
       Schedule.weekends.humanReadable,
@@ -81,5 +88,32 @@ class HumanReadableTest extends FunSuite {
       expression.humanReadable,
       "At 9:00 AM, on day 1 of the month or on Monday"
     )
+  }
+
+  test("a wildcard minute over an hour range reads grammatically") {
+    import cronh.domain.*
+    val expression = CronExpression(
+      Field.all,
+      Field.range(Hour(9), Hour(17)),
+      Field.all,
+      Field.all,
+      Field.all
+    )
+    assertEquals(
+      expression.humanReadable,
+      "Every minute from 9 AM to 5 PM, every day"
+    )
+  }
+
+  test("a redundant All in a list does not leak the word every") {
+    import cronh.domain.*
+    val expression = CronExpression(
+      Field.single(Minute(0)),
+      Field.single(Hour(9)),
+      Field.from(Term.All, Term.Single(MonthDay(1))),
+      Field.all,
+      Field.all
+    )
+    assertEquals(expression.humanReadable, "At 9:00 AM, every day")
   }
 }

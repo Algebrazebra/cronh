@@ -20,11 +20,25 @@ private object HumanReadable {
 
   def describe(expression: CronExpression[?, ?]): String = {
     val phrases =
-      timePhrase(expression.minute, expression.hour) ::
-        dayPhrases(expression.dayOfMonth, expression.dayOfWeek) :::
-        monthPhrase(expression.month).toList
+      timePhrase(
+        collapseAll(expression.minute),
+        collapseAll(expression.hour)
+      ) ::
+        dayPhrases(
+          collapseAll(expression.dayOfMonth),
+          collapseAll(expression.dayOfWeek)
+        ) :::
+        monthPhrase(collapseAll(expression.month)).toList
     phrases.mkString(", ")
   }
+
+  /** Collapses a field that contains [[Term.All]] to a plain wildcard. A field
+    * whose terms include `All` already denotes every value (Vixie OR, DESIGN.md
+    * §4.4), so the other terms are redundant; rendering them as a list produces
+    * ungrammatical output like "on day every and 1 of the month".
+    */
+  private def collapseAll[A](field: Field[A]): Field[A] =
+    if (field.terms.contains(Term.All)) Field.all else field
 
   private def timePhrase(minute: Field[Minute], hour: Field[Hour]): String =
     (minute.terms, hour.terms) match {
@@ -38,6 +52,8 @@ private object HumanReadable {
         s"Every minute between ${clock(h, Minute(0))} and ${clock(h, Minute(59))}"
       case (Term.Single(m) :: Nil, Term.Range(from, to) :: Nil) =>
         s"At minute ${m.value} past every hour from ${hourName(from)} to ${hourName(to)}"
+      case (Term.All :: Nil, Term.Range(from, to) :: Nil) =>
+        s"Every minute from ${hourName(from)} to ${hourName(to)}"
       case _ =>
         s"At minute ${describe(minute)(_.value.toString)} " +
           s"past hour ${describe(hour)(_.value.toString)}"
@@ -52,12 +68,16 @@ private object HumanReadable {
       case _               =>
         Some(s"on day ${describe(dayOfMonth)(_.value.toString)} of the month")
     }
-    val weekDays = dayOfWeek.terms match {
+    // Normalize first so idioms are recognized structurally *and*
+    // semantically: e.g. `on(Mon, Tue, Wed, Thu, Fri)` collapses to
+    // `Range(Monday, Friday)` and reads as "on weekdays".
+    val weekField = dayOfWeek.normalized
+    val weekDays = weekField.terms match {
       case Term.All :: Nil                                       => None
       case Term.Range(DayOfWeek.Monday, DayOfWeek.Friday) :: Nil =>
         Some("on weekdays")
       case terms if isWeekend(terms) => Some("on weekends")
-      case _ => Some(s"on ${describe(dayOfWeek)(_.toString)}")
+      case _ => Some(s"on ${describe(weekField)(_.toString)}")
     }
     (monthDays, weekDays) match {
       case (None, None) => List("every day")
@@ -74,11 +94,10 @@ private object HumanReadable {
     }
 
   private def isWeekend(terms: List[Term[DayOfWeek]]): Boolean = {
-    val weekend: scala.collection.Set[Term[DayOfWeek]] =
-      scala.collection.Set(
-        Term.Single(DayOfWeek.Saturday),
-        Term.Single(DayOfWeek.Sunday)
-      )
+    val weekend = Set[Term[DayOfWeek]](
+      Term.Single(DayOfWeek.Saturday),
+      Term.Single(DayOfWeek.Sunday)
+    )
     terms.toSet == weekend ||
     terms == List(Term.Range(DayOfWeek.Saturday, DayOfWeek.Sunday))
   }

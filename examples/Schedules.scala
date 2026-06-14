@@ -23,6 +23,10 @@ object Schedules {
   val standupReminder = Schedule.on(Mon, Fri).at(noon)
   // standupReminder.toCron == "0 12 * * 1,5"
 
+  // Mid-week deploy window, expressed as a natural range: Tue to Thu at 9 AM.
+  val deployWindow = Schedule.daily.on(Tue to Thu).at(9.h)
+  // deployWindow.toCron == "0 9 * * 2-4"
+
   // Payroll on the 1st and 15th at 6 AM.
   val payroll = Schedule.onDay(1.dom, 15.dom).at(6.h)
   // payroll.toCron == "0 6 1,15 * *"

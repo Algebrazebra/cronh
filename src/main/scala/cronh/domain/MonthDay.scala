@@ -5,11 +5,20 @@ opaque type MonthDay = Int
 
 object MonthDay {
 
+  /** Smallest valid day of month. `inline` so it is a compile-time constant
+    * usable from the `15.dom` literal checks, keeping a single source of truth
+    * for the bounds.
+    */
+  inline val MinValue = 1
+
+  /** Largest valid day of month. See [[MinValue]]. */
+  inline val MaxValue = 31
+
   /** Smart constructor for MonthDay with runtime validation. */
   def apply(value: Int): MonthDay = {
     require(
-      value >= 1 && value <= 31,
-      s"MonthDay must be between 1 and 31, got $value"
+      value >= MinValue && value <= MaxValue,
+      s"MonthDay must be between $MinValue and $MaxValue, got $value"
     )
     value
   }
@@ -17,7 +26,7 @@ object MonthDay {
   given Ordering[MonthDay] = Ordering.Int
 
   given DomainBounds[MonthDay] with {
-    val domain: IndexedSeq[MonthDay] = (1 to 31).map(MonthDay(_))
+    val domain: IndexedSeq[MonthDay] = (MinValue to MaxValue).map(MonthDay(_))
   }
 
   /** The underlying numeric value (1-31). */
