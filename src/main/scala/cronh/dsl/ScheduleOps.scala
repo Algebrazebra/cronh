@@ -1,7 +1,5 @@
 package cronh.dsl
 
-import scala.annotation.targetName
-
 import cronh.domain.*
 
 extension [D <: DaySpec](expression: CronExpression[Status.Unset, D]) {
@@ -15,14 +13,12 @@ extension [D <: DaySpec](expression: CronExpression[Status.Unset, D]) {
       .retag[Status.Set, D]
 
   /** Sets the hour, on the hour (minute 0). */
-  @targetName("atHour")
   def at(hour: Hour): CronExpression[Status.Set, D] =
     at(hour, Minute(0))
 
   /** Sets only the minute, keeping the hour field as already constrained.
     * Useful after [[between]]: `.between(9.h, 17.h).at(30.m)`.
     */
-  @targetName("atMinute")
   def at(minute: Minute): CronExpression[Status.Set, D] =
     expression.copy(minute = Field.single(minute)).retag[Status.Set, D]
 

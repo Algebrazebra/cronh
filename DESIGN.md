@@ -37,7 +37,7 @@ The ADT (`Term`, `Field`, `CronExpression`) models cron faithfully, independent 
 
 ### 2.2 Domain types per cron position
 
-Each position has its own validated type: `Minute` (0–59), `Hour` (0–23), `MonthDay` (1–31), plus enums `Month` and `DayOfWeek`. They're Scala 3 `opaque type`s over `Int`, validated in the smart constructor.
+Each position has its own validated type: `Minute` (0–59), `Hour` (0–23), `MonthDay` (1–31), plus enums `Month` and `DayOfWeek`. They're private-constructor case classes wrapping an `Int`, validated in the smart constructor. (They were originally `opaque type`s over `Int`, but that made them share `Int`'s universal equality, so `Minute(5) == Hour(5)` answered `true`; nominal case classes make it `false`.)
 
 - **Rejected:** A single generic `Int`-valued `CronField`. Lets nonsense like `Cron(minute = Exact(70))` type-check. Pushes validation responsibility into the renderer, which then needs to know domains.
 
@@ -109,7 +109,7 @@ Standard library only. `Field` is a semigroup under `++`, but `cats.Semigroup` i
 
 ### 2.14 Scala 3 only
 
-`opaque type`, `extension`, `enum`, and `given` are used freely. Cross-building to 2.13 was considered and rejected: cost ≈ doubles MVP effort, the 2.13 surface would be substantially noisier (implicit classes × phantom-type constraints), and no concrete 2.13 consumer exists.
+`extension`, `enum`, `given`, and `derives` are used freely. Cross-building to 2.13 was considered and rejected: cost ≈ doubles MVP effort, the 2.13 surface would be substantially noisier (implicit classes × phantom-type constraints), and no concrete 2.13 consumer exists.
 
 ### 2.15 Cross-field semantics live in the dialect, not the model
 
@@ -146,9 +146,9 @@ The model orders weekdays Monday-first, so `Range(Friday, Sunday)` is valid; und
 
 ```scala
 // === Domain types (cronh.domain) ===
-opaque type Minute   = Int   // 0–59, validated
-opaque type Hour     = Int   // 0–23, validated
-opaque type MonthDay = Int   // 1–31, validated
+final case class Minute   private (value: Int)  // 0–59, validated
+final case class Hour     private (value: Int)  // 0–23, validated
+final case class MonthDay private (value: Int)  // 1–31, validated
 
 enum Month(val value: Int):
   case January extends Month(1)
@@ -319,7 +319,7 @@ Small, intentional or harmless differences between the final plan in `old_convo.
 | Phantom variance | Unspecified (implicitly invariant). | `CronExpression[+Time, +Day]` covariant. | Deliberate — keeps directly constructed values DSL-usable (§2.16). |
 | `monthly`/`yearly` day phantom | Unspecified. | Typed `DaySpec.ByMonthDay`: their day *is* their meaning, so `.on`/`.onDay` are conflicts; use `Schedule.onDay(...)` for other dates. | Consistent with the "no silent overwrite" rule; only `daily`'s *time* stays `Unset` per the Phase 3 decision. |
 | Normalization strength | "merges overlapping ranges" | Also merges *adjacent* runs (`1-3,4-6` → `1-6`) via full-domain enumeration (`DomainBounds`). | **Stronger than the plan**, still semantics-preserving. Keep. |
-| `.at` minute-only overload | Phase 4 sketch mentioned `.at(0.m)` after `between`. | Implemented; needs `@targetName("atMinute")` because `Hour` and `Minute` both erase to `Int`. | Erasure tax on opaque types; invisible to users. |
+| `.at` minute-only overload | Phase 4 sketch mentioned `.at(0.m)` after `between`. | Implemented; no `@targetName` needed since `Hour` and `Minute` are nominal case classes with distinct erased signatures (the `@targetName` workaround was required while they were opaque aliases over `Int`). | Resolved by the case-class conversion. |
 
 None of these are blockers. Documenting them so future-me doesn't think they're bugs.
 
@@ -425,7 +425,7 @@ Tracked here so they're not lost between sessions.
 1. ~~**Should `Field.from` survive?**~~ **Resolved: kept.** The DSL extensions ended up using `Field.of`/`Field.range`/`Field.single` internally, but `Field.from` remains the only one-call way to build a mixed-shape field (and the test generators lean on it). Revisit only if it rots.
 2. ~~**Package layout when Phase 2/3 land.**~~ **Resolved: split into `cronh.{domain, render, dsl}`.** Dialects folded into `render`; no separate `model` package. See §5.
 3. **Phantom-type API ergonomics.** Current failure mode is a missing-extension error ("value at is not a member of CronExpression[Status.Set, ...]"), which names the offending state but doesn't say *why*. Acceptable for now; revisit with `@implicitNotFound`-style helpers or `compiletime.error` shims if users stumble.
-4. ~~**`between` semantics.**~~ **Resolved as planned:** `.between(9.h, 17.h)` sets the hour range and does not flip `Time`; a minute-only `.at(30.m)` overload (via `@targetName`, see §5) provides the follow-on. The stricter "must call `.at` before `.toCron`" alternative was dropped — a renderable `0 9-17 * * 1-5` is a perfectly meaningful schedule on its own.
+4. ~~**`between` semantics.**~~ **Resolved as planned:** `.between(9.h, 17.h)` sets the hour range and does not flip `Time`; a minute-only `.at(30.m)` overload (see §5) provides the follow-on. The stricter "must call `.at` before `.toCron`" alternative was dropped — a renderable `0 9-17 * * 1-5` is a perfectly meaningful schedule on its own.
 5. ~~**Validation style.**~~ **Resolved: standardized on `require`** across all smart constructors.
 6. **24-hour time formatting for `humanReadable`.** Currently 12h AM/PM only. Add a config knob (or a locale-aware formatter) if demand exists.
 7. **DSL cannot express the day-of-month-OR-day-of-week pattern.** The `.on`/`.onDay` exclusivity (§4.5) makes the fluent API a strict subset of Vixie: it builds only schedules where at most one day field is restricted, so the OR case (`30 4 1,15 * 5` = "1st and 15th *or* every Friday") is unbuildable. Conservative and correct under Vixie OR, but two things to revisit: (a) whether to offer an opt-in escape hatch — a combined `.onDayOrWeekday(...)` builder, or a relaxation of the `DaySpec` phantom — for users who genuinely want OR; (b) how the exclusivity should interact with **dialects that don't OR the two fields**. Under Quartz, `?` marks one day field irrelevant and the default reading is AND, where setting both fields is meaningful and unsurprising — so the exclusivity that protects users under Vixie may be unnecessary, or differently-motivated, there. Whether such dialects even land (and whether the model should carry a per-dialect "day-combination semantics" notion) is itself open. Both depend on run semantics that §2.15 deliberately keeps out of the model, so this stays open until the dialect/scheduler layer exists.

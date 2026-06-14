@@ -1,7 +1,12 @@
 package cronh.domain
 
-/** A cron minute. Valid values are 0-59. */
-opaque type Minute = Int
+/** A cron minute. Valid values are 0-59.
+  *
+  * A distinct value type: as a case class it has nominal identity, so a
+  * cross-unit comparison such as `Minute(5) == Hour(5)` is `false` rather than
+  * silently `true`.
+  */
+final case class Minute private (value: Int) derives CanEqual
 
 object Minute {
 
@@ -25,16 +30,13 @@ object Minute {
       value >= MinValue && value <= MaxValue,
       s"Minute must be between $MinValue and $MaxValue, got $value"
     )
-    value
+    new Minute(value)
   }
 
-  given Ordering[Minute] = Ordering.Int
+  given Ordering[Minute] = Ordering.by(_.value)
 
   given DomainBounds[Minute] with {
     val domain: IndexedSeq[Minute] = (MinValue to MaxValue).map(Minute(_))
   }
-
-  /** The underlying numeric value (0-59). */
-  extension (minute: Minute) def value: Int = minute
 
 }

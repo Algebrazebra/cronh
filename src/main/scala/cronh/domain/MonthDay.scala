@@ -1,7 +1,12 @@
 package cronh.domain
 
-/** A day of the month. Valid values are 1-31. */
-opaque type MonthDay = Int
+/** A day of the month. Valid values are 1-31.
+  *
+  * A distinct value type: as a case class it has nominal identity, so a
+  * cross-unit comparison such as `MonthDay(5) == Hour(5)` is `false` rather
+  * than silently `true`.
+  */
+final case class MonthDay private (value: Int) derives CanEqual
 
 object MonthDay {
 
@@ -20,15 +25,13 @@ object MonthDay {
       value >= MinValue && value <= MaxValue,
       s"MonthDay must be between $MinValue and $MaxValue, got $value"
     )
-    value
+    new MonthDay(value)
   }
 
-  given Ordering[MonthDay] = Ordering.Int
+  given Ordering[MonthDay] = Ordering.by(_.value)
 
   given DomainBounds[MonthDay] with {
     val domain: IndexedSeq[MonthDay] = (MinValue to MaxValue).map(MonthDay(_))
   }
 
-  /** The underlying numeric value (1-31). */
-  extension (day: MonthDay) def value: Int = day
 }
