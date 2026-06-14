@@ -83,13 +83,15 @@ Backwards ranges (`Range(5, 2)`), domain violations (`Minute(99)`), and empty fi
 
 - **Rejected:** Intermediate builder types (`At("14:30").on(Monday, Friday)`). Each builder type exists only to host the next method; you can't store `At("14:30")` and later attach days conditionally without diving into the builder's internals.
 
-### 2.10 Phantom types track what's been set
+### 2.10 One phantom per field tracks what's been set
 
-`CronExpression[Time <: Status, Day <: DaySpec]` carries type-level flags. `.at` is only callable when `Time = Unset`, returns `Time = Set`. Same for `.on` / `.onDay` with `Day`.
+`CronExpression[Min, Hr, Dom, Mon, Dow]` carries **one `FieldState` (`Set`/`Unset`) per field**, in cron order. A setter is callable only while its target field(s) are `Unset` and returns them `Set`: `.at(hour, minute)` needs `Min = Hr = Unset`; `.at(minute)` needs only `Min = Unset` (so it survives after `.between`); `.between` needs `Hr = Unset`; `.in` needs `Mon = Unset`. `.on`/`.onDay` each need *both* day fields `Unset`, which is how their mutual exclusivity is enforced.
 
-- **Why this matters:** Without phantoms, `Schedule.daily.at(9.h).at(14.h)` silently overwrites, and `Schedule.daily.every(15, Minutes).at(9.h)` destroys the step. With phantoms, both are compile errors.
+- **Why one-per-field, not a bundled state:** an earlier scheme bundled minute+hour into a single `Status` and tracked the day fields with a `DaySpec` sum type. It accreted special cases — a `Status.HourSet` substate just to say "hour fixed, minute free," and a separate `MonthSpec` parameter for the month. A uniform per-field tag absorbs all of those as one rule (`Set`/`Unset` per field) and makes the `HourSet` substate unnecessary.
+- **Why this matters:** Without phantoms, `Schedule.daily.at(9.h).at(14.h)`, `Schedule.weekdays.between(9.h, 17.h).at(10.h)`, and `.in(June).in(July)` all silently overwrite. With per-field phantoms each is a compile error.
 - **Rejected alternative:** Document "last write wins" and accept the footgun. For a domain that gets paged on at 3 AM, the type cost is worth it.
-- **Implementation tradeoff:** Phantom flag changes use a `private[cronh]` cast helper to avoid `copy` re-typing every call. Concentrated in one place, safe by construction.
+- **Rejected alternative:** keep `DaySpec` for the two day fields (a "hybrid"). `DaySpec` makes the both-day-fields-set state *unrepresentable*, which welds the Vixie-OR-avoidance policy into the dialect-neutral model (cf. §2.15). Per-field tags keep that state representable and gate it with a precondition, so a future non-OR dialect relaxes the guard instead of expanding a core type (§4.5, §7 Q7).
+- **Implementation tradeoff:** five type parameters are verbose, mitigated by the `FreshCron` alias and `[?, ?, ?, ?, ?]` wildcards in the renderers. Phantom flag changes use a `private[cronh]` cast helper (`retag`) to avoid `copy` re-typing every call. Concentrated in one place, safe by construction.
 
 ### 2.11 Rendering is dialect-bound
 
@@ -122,7 +124,7 @@ Standard library only. `Field` is a semigroup under `++`, but `cats.Semigroup` i
 
 ### 2.16 Phantom markers are nested; phantom parameters are covariant
 
-The Phase 4 markers live inside companion-style objects (`Status.Set`, `Status.Unset`, `DaySpec.NoDay`, `DaySpec.ByWeekday`, `DaySpec.ByMonthDay`), and `CronExpression[+Time, +Day]` is covariant in both phantoms.
+The phantom markers live inside a companion-style object (`FieldState.Set`, `FieldState.Unset`), and `CronExpression[+Min, +Hr, +Dom, +Mon, +Dow]` is covariant in all five phantoms.
 
 - **Rejected:** top-level `Set`/`Unset` traits (the plan's spelling) — a top-level `Set` in `cronh.domain` shadows `scala.collection.immutable.Set` for every file in the package.
 - **Rejected:** invariant phantoms. A directly constructed `CronExpression(...)` infers its phantoms to `Nothing`; with invariance such a value would match *no* DSL extension and need explicit `FreshCron` ascriptions everywhere. With covariance `Nothing` conforms to every state, so raw domain values remain fully DSL-usable, while `Set`/`Unset` (siblings) still exclude each other.
@@ -179,15 +181,22 @@ object Field:
   def of[A](first: A, rest: A*): Field[A]
   def from[A](first: Term[A], rest: Term[A]*): Field[A]   // mixed-term composition
 
-// === CronExpression (phantoms track DSL state; no runtime cost) ===
-final case class CronExpression[+Time <: Status, +Day <: DaySpec](
+// === CronExpression (one phantom per field; no runtime cost) ===
+sealed trait FieldState                       // FieldState.Set | FieldState.Unset
+final case class CronExpression[
+  +Min <: FieldState,   // minute
+  +Hr  <: FieldState,   // hour
+  +Dom <: FieldState,   // day of month
+  +Mon <: FieldState,   // month
+  +Dow <: FieldState    // day of week
+](
   minute:     Field[Minute],
   hour:       Field[Hour],
   dayOfMonth: Field[MonthDay],
   month:      Field[Month],
   dayOfWeek:  Field[DayOfWeek]
 )
-type FreshCron = CronExpression[Status.Unset, DaySpec.NoDay]
+type FreshCron = CronExpression[Unset, Unset, Unset, Unset, Unset]
 
 // === Normalization (cronh.domain, opt-in) ===
 trait DomainBounds[A] { def domain: IndexedSeq[A] }   // full ascending domain
@@ -280,7 +289,9 @@ Normalization is **opt-in**: unnormalized fields are valid and render faithfully
 
 When both day fields are non-`*`, Vixie cron fires if **either** matches (OR); some implementations AND them. The library adopts **Vixie OR** as its baseline (§2.15). The model attaches no semantics to the field combination — OR-vs-AND is a dialect/renderer concern. The Quartz dialect (future) introduces `?` ("no specific value") so a user can explicitly mark one of the two fields as irrelevant, expressing the AND-style "match only the other field."
 
-**DSL vs model — the OR case is unbuildable through the fluent API.** The `DaySpec` phantom makes `.on` (day-of-week) and `.onDay` (day-of-month) mutually exclusive: whichever fires first retags the expression away from `DaySpec.NoDay`, removing the other from scope (a compile error). So every `CronExpression` the *DSL* builds has **at most one** day field restricted — it can never construct the both-restricted OR case, and therefore never emits a schedule whose Vixie meaning diverges from the naive AND reading. This holds regardless of field *width*: `.on(Mon…Sun)` (a full-domain weekday set) still renders `* * * * 0-6` with day-of-month `*`, so only one field is restricted and the OR rule never triggers. The `DaySpec` tag records *which lever set the day*, not how much it narrows, so a full-domain selection is a valid choice that correctly tags `ByWeekday` — not a bug.
+**DSL vs model — the OR case is unbuildable through the fluent API.** `.on` (day-of-week) and `.onDay` (day-of-month) each require *both* day-field phantoms still `Unset`, so whichever fires first flips one to `Set` and removes the other from scope (a compile error). So every `CronExpression` the *DSL* builds has **at most one** day field restricted — it can never construct the both-restricted OR case, and therefore never emits a schedule whose Vixie meaning diverges from the naive AND reading. This holds regardless of field *width*: `.on(Mon…Sun)` (a full-domain weekday set) still renders `* * * * 0-6` with day-of-month `*`, so only one field is restricted and the OR rule never triggers. The phantom records *that* a day lever fired, not how much it narrows, so a full-domain selection is a valid choice that correctly tags the day-of-week field `Set` — not a bug.
+
+Crucially, the exclusivity now lives in the *precondition* on `.on`/`.onDay`, not in the *state type*: `CronExpression[…, Dom = Set, …, Dow = Set]` is a perfectly representable type (the model always had five independent fields). The earlier `DaySpec` sum type could not even *name* the both-set state, baking Vixie-OR-avoidance into the model. Per-field tags keep the state representable, so a future dialect whose day semantics are not OR (e.g. Quartz `?`, where setting both is meaningful) can offer a builder that relaxes the precondition — without touching `CronExpression`. Per-field `Unset` also corresponds exactly to "field still `*`," which is precisely the condition under which Vixie OR vs AND diverges, so the guard sits at the right semantic pivot.
 
 The *model*, by contrast, is a superset: five independent fields can hold both-restricted (e.g. a future parser reading `30 4 1,15 * 5`), and both renderers already interpret that — `humanReadable` reads it as "X or Y" (Phase 7), and the OR meaning lives in interpretation, not construction, exactly where §2.15 puts it.
 
@@ -315,9 +326,10 @@ Small, intentional or harmless differences between the final plan in `old_convo.
 | `Field.from` | Latest plan iteration suggested dropping in favor of `++`. | `Field.from` is implemented and tested. | Worth keeping for mixed-term construction without three-`++`-chains. Light surface area; revisit if it becomes redundant in practice. |
 | Validation throw style | Plan used `require(...)`. | Standardized on `require` across `Minute`, `Hour`, `MonthDay`, `Range`. | **Resolved.** |
 | `Minute(60)` test | Plan example. | 60/24/0/32 boundary tests exist (PR #7). | **Resolved.** |
-| Phantom marker names | Top-level `Set`, `Unset`, `NoDay`, ... | Nested: `Status.Set`, `DaySpec.NoDay`, ... | Deliberate — top-level `Set` shadows `scala.Set` (§2.16). |
-| Phantom variance | Unspecified (implicitly invariant). | `CronExpression[+Time, +Day]` covariant. | Deliberate — keeps directly constructed values DSL-usable (§2.16). |
-| `monthly`/`yearly` day phantom | Unspecified. | Typed `DaySpec.ByMonthDay`: their day *is* their meaning, so `.on`/`.onDay` are conflicts; use `Schedule.onDay(...)` for other dates. | Consistent with the "no silent overwrite" rule; only `daily`'s *time* stays `Unset` per the Phase 3 decision. |
+| Phantom granularity | Plan: one `Status` (time) + one `DaySpec` (day). | One `FieldState` (`Set`/`Unset`) per field: `CronExpression[Min, Hr, Dom, Mon, Dow]`. | **Evolved past the plan (§2.10).** Bundled `Status`/`DaySpec` accreted special cases (an `HourSet` substate, a separate `MonthSpec`); per-field tags absorb them uniformly and keep both-day-fields-set representable for future dialects. |
+| Phantom marker names | Top-level `Set`, `Unset`, `NoDay`, ... | Nested: `FieldState.Set`, `FieldState.Unset`. | Deliberate — top-level `Set` shadows `scala.Set` (§2.16). |
+| Phantom variance | Unspecified (implicitly invariant). | `CronExpression[+Min, +Hr, +Dom, +Mon, +Dow]` covariant in all five. | Deliberate — keeps directly constructed values DSL-usable (§2.16). |
+| `monthly`/`yearly` day phantom | Unspecified. | Day-of-month field tagged `Set`: their day *is* their meaning, so `.on`/`.onDay` are conflicts; use `Schedule.onDay(...)` for other dates. `yearly` additionally tags the month `Set`, so `.in` is a compile error. | Consistent with the "no silent overwrite" rule; only `daily`'s minute/hour stay `Unset` per the Phase 3 decision. |
 | Normalization strength | "merges overlapping ranges" | Also merges *adjacent* runs (`1-3,4-6` → `1-6`) via full-domain enumeration (`DomainBounds`). | **Stronger than the plan**, still semantics-preserving. Keep. |
 | `.at` minute-only overload | Phase 4 sketch mentioned `.at(0.m)` after `between`. | Implemented; no `@targetName` needed since `Hour` and `Minute` are nominal case classes with distinct erased signatures (the `@targetName` workaround was required while they were opaque aliases over `Int`). | Resolved by the case-class conversion. |
 
@@ -371,9 +383,9 @@ Decision locked as planned: `Schedule.daily` is `Time = Unset` with default minu
 
 ### Phase 4 — Phantom types ✅
 
-- ✅ Marker traits: `Status` (`Status.Set`, `Status.Unset`), `DaySpec` (`DaySpec.NoDay`, `DaySpec.ByWeekday`, `DaySpec.ByMonthDay`) — nested, §2.16
-- ✅ Parameterize `CronExpression[+Time <: Status, +Day <: DaySpec]`
-- ✅ Type alias `FreshCron = CronExpression[Status.Unset, DaySpec.NoDay]`
+- ✅ Marker trait: `FieldState` (`FieldState.Set`, `FieldState.Unset`) — nested, §2.16. (Superseded the bundled `Status`/`DaySpec`/`MonthSpec` scheme; see §2.10 and §5.)
+- ✅ Parameterize `CronExpression[+Min, +Hr, +Dom, +Mon, +Dow]`, one `FieldState` per field
+- ✅ Type alias `FreshCron = CronExpression[Unset, Unset, Unset, Unset, Unset]`
 - ✅ Re-type each extension with phantom constraints
 - ✅ `compileErrors(...)` tests for double-set and DoW/DoM conflict (`PhantomTest`, with a positive control verifying the snippets see the right scope)
 - ✅ `between` does not flip `Time` (constrains hour, leaves minute settable via `.at(30.m)` — minute-only `.at` overload)
@@ -424,11 +436,11 @@ Tracked here so they're not lost between sessions.
 
 1. ~~**Should `Field.from` survive?**~~ **Resolved: kept.** The DSL extensions ended up using `Field.of`/`Field.range`/`Field.single` internally, but `Field.from` remains the only one-call way to build a mixed-shape field (and the test generators lean on it). Revisit only if it rots.
 2. ~~**Package layout when Phase 2/3 land.**~~ **Resolved: split into `cronh.{domain, render, dsl}`.** Dialects folded into `render`; no separate `model` package. See §5.
-3. **Phantom-type API ergonomics.** Current failure mode is a missing-extension error ("value at is not a member of CronExpression[Status.Set, ...]"), which names the offending state but doesn't say *why*. Acceptable for now; revisit with `@implicitNotFound`-style helpers or `compiletime.error` shims if users stumble.
+3. **Phantom-type API ergonomics.** Current failure mode is a missing-extension error ("value at is not a member of CronExpression[Set, Set, ...]"), which names the offending state but doesn't say *why*. Acceptable for now; revisit with `@implicitNotFound`-style helpers or `compiletime.error` shims if users stumble.
 4. ~~**`between` semantics.**~~ **Resolved as planned:** `.between(9.h, 17.h)` sets the hour range and does not flip `Time`; a minute-only `.at(30.m)` overload (see §5) provides the follow-on. The stricter "must call `.at` before `.toCron`" alternative was dropped — a renderable `0 9-17 * * 1-5` is a perfectly meaningful schedule on its own.
 5. ~~**Validation style.**~~ **Resolved: standardized on `require`** across all smart constructors.
 6. **24-hour time formatting for `humanReadable`.** Currently 12h AM/PM only. Add a config knob (or a locale-aware formatter) if demand exists.
-7. **DSL cannot express the day-of-month-OR-day-of-week pattern.** The `.on`/`.onDay` exclusivity (§4.5) makes the fluent API a strict subset of Vixie: it builds only schedules where at most one day field is restricted, so the OR case (`30 4 1,15 * 5` = "1st and 15th *or* every Friday") is unbuildable. Conservative and correct under Vixie OR, but two things to revisit: (a) whether to offer an opt-in escape hatch — a combined `.onDayOrWeekday(...)` builder, or a relaxation of the `DaySpec` phantom — for users who genuinely want OR; (b) how the exclusivity should interact with **dialects that don't OR the two fields**. Under Quartz, `?` marks one day field irrelevant and the default reading is AND, where setting both fields is meaningful and unsurprising — so the exclusivity that protects users under Vixie may be unnecessary, or differently-motivated, there. Whether such dialects even land (and whether the model should carry a per-dialect "day-combination semantics" notion) is itself open. Both depend on run semantics that §2.15 deliberately keeps out of the model, so this stays open until the dialect/scheduler layer exists.
+7. **DSL cannot express the day-of-month-OR-day-of-week pattern.** The `.on`/`.onDay` exclusivity (§4.5) makes the fluent API a strict subset of Vixie: it builds only schedules where at most one day field is restricted, so the OR case (`30 4 1,15 * 5` = "1st and 15th *or* every Friday") is unbuildable. Conservative and correct under Vixie OR, but two things to revisit: (a) whether to offer an opt-in escape hatch — a combined `.onDayOrWeekday(...)` builder — for users who genuinely want OR; (b) how the exclusivity should interact with **dialects that don't OR the two fields**. Under Quartz, `?` marks one day field irrelevant and the default reading is AND, where setting both fields is meaningful and unsurprising — so the exclusivity that protects users under Vixie may be unnecessary, or differently-motivated, there. The per-field phantom design (§2.10) makes both of these cheap: the both-day-fields-`Set` state is already representable, so either escape hatch is a new builder whose precondition does not require the other day field `Unset` — no change to `CronExpression`. Whether such dialects even land (and whether the model should carry a per-dialect "day-combination semantics" notion) is itself open. Both depend on run semantics that §2.15 deliberately keeps out of the model, so this stays open until the dialect/scheduler layer exists.
 
 ---
 

@@ -24,6 +24,35 @@ class PhantomTest extends FunSuite {
     assert(compileErrors("Schedule.daily.at(9.h).between(9.h, 17.h)").nonEmpty)
   }
 
+  test(".at(hour) after between is a compile error (no silent overwrite)") {
+    assert(
+      compileErrors("Schedule.weekdays.between(9.h, 17.h).at(10.h)").nonEmpty
+    )
+  }
+
+  test(".at(hour) on an hourly schedule is a compile error") {
+    assert(compileErrors("Schedule.hourly.at(9.h)").nonEmpty)
+  }
+
+  test("control: .at(minute) on an hourly schedule type-checks") {
+    assertEquals(compileErrors("Schedule.hourly.at(30.m)"), "")
+  }
+
+  test(".in twice is a compile error (no silent overwrite)") {
+    assert(
+      compileErrors(
+        "Schedule.daily.in(cronh.domain.Month.June)" +
+          ".in(cronh.domain.Month.July)"
+      ).nonEmpty
+    )
+  }
+
+  test(".in after Schedule.yearly is a compile error") {
+    assert(
+      compileErrors("Schedule.yearly.in(cronh.domain.Month.March)").nonEmpty
+    )
+  }
+
   test(".on after .onDay is a compile error") {
     assert(compileErrors("Schedule.daily.onDay(1.dom).on(Mon)").nonEmpty)
   }

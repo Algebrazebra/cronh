@@ -1,6 +1,7 @@
 package cronh.dsl
 
 import cronh.domain.*
+import cronh.domain.FieldState.{Set, Unset}
 
 /** Entry points for building schedules fluently.
   *
@@ -20,26 +21,32 @@ object Schedule {
   val daily: FreshCron =
     CronExpression(zeroMinute, zeroHour, Field.all, Field.all, Field.all)
 
-  /** Every hour, on the hour, by default. */
-  val hourly: FreshCron =
+  /** Every hour, on the hour, by default. The hour field is already at its
+    * widest, so it is [[FieldState.Set]]: refine only the minute with
+    * `.at(30.m)`; `.at(hour)` (which would silently make it once-daily) is a
+    * compile error.
+    */
+  val hourly: CronExpression[Unset, Set, Unset, Unset, Unset] =
     CronExpression(zeroMinute, Field.all, Field.all, Field.all, Field.all)
 
   /** Monday through Friday at 00:00 by default. */
-  def weekdays: CronExpression[Status.Unset, DaySpec.ByWeekday] =
+  def weekdays: CronExpression[Unset, Unset, Unset, Unset, Set] =
     CronExpression(zeroMinute, zeroHour, Field.all, Field.all, Weekdays.toField)
 
   /** Saturday and Sunday at 00:00 by default. */
-  def weekends: CronExpression[Status.Unset, DaySpec.ByWeekday] =
+  def weekends: CronExpression[Unset, Unset, Unset, Unset, Set] =
     CronExpression(zeroMinute, zeroHour, Field.all, Field.all, Weekends.toField)
 
   /** The first of every month at 00:00 by default. For other days of the month
     * use [[onDay]].
     */
-  val monthly: CronExpression[Status.Unset, DaySpec.ByMonthDay] =
+  val monthly: CronExpression[Unset, Unset, Set, Unset, Unset] =
     CronExpression(zeroMinute, zeroHour, firstDay, Field.all, Field.all)
 
-  /** Every January 1st at 00:00 by default. */
-  val yearly: CronExpression[Status.Unset, DaySpec.ByMonthDay] =
+  /** Every January 1st at 00:00 by default. The month is already constrained,
+    * so `.in` is unavailable (it would silently replace January).
+    */
+  val yearly: CronExpression[Unset, Unset, Set, Set, Unset] =
     CronExpression(
       zeroMinute,
       zeroHour,
@@ -52,7 +59,7 @@ object Schedule {
   def on(
       first: DayOfWeek,
       rest: DayOfWeek*
-  ): CronExpression[Status.Unset, DaySpec.ByWeekday] =
+  ): CronExpression[Unset, Unset, Unset, Unset, Set] =
     CronExpression(
       zeroMinute,
       zeroHour,
@@ -65,7 +72,7 @@ object Schedule {
   def onDay(
       first: MonthDay,
       rest: MonthDay*
-  ): CronExpression[Status.Unset, DaySpec.ByMonthDay] =
+  ): CronExpression[Unset, Unset, Set, Unset, Unset] =
     CronExpression(
       zeroMinute,
       zeroHour,
