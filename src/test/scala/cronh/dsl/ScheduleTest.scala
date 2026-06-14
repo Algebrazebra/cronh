@@ -82,4 +82,18 @@ class ScheduleTest extends FunSuite {
   test(".on after .at still works (day spec independent of time)") {
     assertEquals(Schedule.daily.at(9.h).on(Tue, Thu).toCron, "0 9 * * 2,4")
   }
+
+  // Mirrors examples/Schedules.scala `nightlyBackup`, whose header claims every
+  // expression is covered by an acceptance test.
+  test("nightlyBackup renders 30 2 * * *") {
+    assertEquals(Schedule.daily.at(2.h, 30.m).toCron, "30 2 * * *")
+  }
+
+  // Mirrors examples/Schedules.scala `summerReport`.
+  test("summerReport renders 0 0 1 6,7 *") {
+    assertEquals(
+      Schedule.monthly.at(midnight).in(Month.June, Month.July).toCron,
+      "0 0 1 6,7 *"
+    )
+  }
 }
