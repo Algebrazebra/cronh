@@ -30,8 +30,8 @@ object WeekdaySelector {
   def apply(first: DayOfWeek, rest: DayOfWeek*): WeekdaySelector =
     Field.of(first, rest*)
 
-  /** An inclusive run of weekdays, e.g. `WeekdaySelector.range(Mon, Fri)`, or in
-    * Scala range style `Mon to Fri` (see the top-level `to` extension).
+  /** An inclusive run of weekdays, e.g. `WeekdaySelector.range(Mon, Fri)`, or
+    * in Scala range style `Mon to Fri` (see the top-level `to` extension).
     */
   def range(from: DayOfWeek, to: DayOfWeek): WeekdaySelector =
     Field.range(from, to)
