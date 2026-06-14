@@ -25,12 +25,12 @@ object Schedule {
     CronExpression(zeroMinute, Field.all, Field.all, Field.all, Field.all)
 
   /** Monday through Friday at 00:00 by default. */
-  val weekdays: CronExpression[Status.Unset, DaySpec.ByWeekday] =
-    CronExpression(zeroMinute, zeroHour, Field.all, Field.all, Weekdays)
+  def weekdays: CronExpression[Status.Unset, DaySpec.ByWeekday] =
+    CronExpression(zeroMinute, zeroHour, Field.all, Field.all, Weekdays.toField)
 
   /** Saturday and Sunday at 00:00 by default. */
-  val weekends: CronExpression[Status.Unset, DaySpec.ByWeekday] =
-    CronExpression(zeroMinute, zeroHour, Field.all, Field.all, Weekends)
+  def weekends: CronExpression[Status.Unset, DaySpec.ByWeekday] =
+    CronExpression(zeroMinute, zeroHour, Field.all, Field.all, Weekends.toField)
 
   /** The first of every month at 00:00 by default. For other days of the month
     * use [[onDay]].
