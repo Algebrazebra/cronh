@@ -60,6 +60,21 @@ class ScheduleTest extends FunSuite {
     assertEquals(Schedule.daily.on(Weekdays).at(9.h).toCron, "0 9 * * 1-5")
   }
 
+  test("Mon to Fri builds an inclusive weekday range") {
+    assertEquals(Schedule.daily.on(Mon to Fri).at(9.h).toCron, "0 9 * * 1-5")
+  }
+
+  test("Tue to Thu renders the middle of the week") {
+    assertEquals(Schedule.daily.on(Tue to Thu).at(9.h).toCron, "0 9 * * 2-4")
+  }
+
+  test("Monday to Friday: long-form day aliases work in a range") {
+    assertEquals(
+      Schedule.daily.on(Monday to Friday).at(9.h).toCron,
+      "0 9 * * 1-5"
+    )
+  }
+
   test(".on(Field.all) does not compile: a wildcard is not a WeekdaySelector") {
     assert(
       !scala.compiletime.testing.typeChecks(
