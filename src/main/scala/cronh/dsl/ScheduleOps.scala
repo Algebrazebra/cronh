@@ -46,11 +46,16 @@ extension [T <: Status](expression: CronExpression[T, DaySpec.NoDay]) {
       .copy(dayOfWeek = Field.of(first, rest*))
       .retag[T, DaySpec.ByWeekday]
 
-  /** Restricts the schedule to a prebuilt day-of-week field, e.g.
+  /** Restricts the schedule to a prebuilt weekday selection, e.g.
     * `.on(Weekdays)` or `.on(Weekends)`.
+    *
+    * A [[WeekdaySelector]] has no wildcard inhabitant, so this cannot be handed
+    * a `*` that would mark the result `ByWeekday` while matching every day —
+    * that mistake is now a compile error rather than a runtime exception. Leave
+    * the day unconstrained instead of trying to pass a wildcard here.
     */
-  def on(days: Field[DayOfWeek]): CronExpression[T, DaySpec.ByWeekday] =
-    expression.copy(dayOfWeek = days).retag[T, DaySpec.ByWeekday]
+  def on(days: WeekdaySelector): CronExpression[T, DaySpec.ByWeekday] =
+    expression.copy(dayOfWeek = days.toField).retag[T, DaySpec.ByWeekday]
 
   /** Restricts the schedule to these days of the month. Mutually exclusive with
     * [[on]]: setting both is a compile error (DESIGN.md §2.15).
