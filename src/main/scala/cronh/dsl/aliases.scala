@@ -23,6 +23,27 @@ val Sat: DayOfWeek = DayOfWeek.Saturday
 /** Short alias for [[cronh.domain.DayOfWeek.Sunday]]. */
 val Sun: DayOfWeek = DayOfWeek.Sunday
 
+/** Long alias for [[cronh.domain.DayOfWeek.Monday]], e.g. `Monday to Friday`. */
+val Monday: DayOfWeek = DayOfWeek.Monday
+
+/** Long alias for [[cronh.domain.DayOfWeek.Tuesday]]. */
+val Tuesday: DayOfWeek = DayOfWeek.Tuesday
+
+/** Long alias for [[cronh.domain.DayOfWeek.Wednesday]]. */
+val Wednesday: DayOfWeek = DayOfWeek.Wednesday
+
+/** Long alias for [[cronh.domain.DayOfWeek.Thursday]]. */
+val Thursday: DayOfWeek = DayOfWeek.Thursday
+
+/** Long alias for [[cronh.domain.DayOfWeek.Friday]]. */
+val Friday: DayOfWeek = DayOfWeek.Friday
+
+/** Long alias for [[cronh.domain.DayOfWeek.Saturday]]. */
+val Saturday: DayOfWeek = DayOfWeek.Saturday
+
+/** Long alias for [[cronh.domain.DayOfWeek.Sunday]]. */
+val Sunday: DayOfWeek = DayOfWeek.Sunday
+
 /** Midnight (hour 0), e.g. `Schedule.daily.at(midnight)`. */
 val midnight: Hour = Hour(0)
 
