@@ -4,11 +4,11 @@ import cronh.domain.{DayOfWeek, Field}
 
 /** A non-empty selection of weekdays for use with `.on`.
   *
-  * Unlike a raw `Field[DayOfWeek]`, a selector has no wildcard inhabitant: every
-  * constructor below narrows the day. `.on` therefore cannot be handed a `*`
-  * that would silently match every day, so the check the runtime `require` used
-  * to make is now made by the type system — an illegal `.on(Field.all)` does not
-  * compile rather than throwing.
+  * Unlike a raw `Field[DayOfWeek]`, a selector has no wildcard inhabitant:
+  * every constructor below narrows the day. `.on` therefore cannot be handed a
+  * `*` that would silently match every day, so the check the runtime `require`
+  * used to make is now made by the type system — an illegal `.on(Field.all)`
+  * does not compile rather than throwing.
   *
   * It is an opaque alias for `Field[DayOfWeek]`, so it costs nothing at runtime
   * and converts back with [[toField]] for storage in a `CronExpression`.
