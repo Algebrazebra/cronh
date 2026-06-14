@@ -1,15 +1,10 @@
-I want a big header with the name and the tagline
-
-
 # CRONH
+> the _h_ stands for human-friendly
 
-
-the _h_ stands for human-friendly
-
-
-<br /> 
-
-// badges
+[![Scala Version](https://img.shields.io/badge/scala-3.x-DC322F.svg)](https://www.scala-lang.org/)
+[![Maven Central](https://img.shields.io/maven-central/v/com.yourorg/scala-lib_3)](https://search.maven.org/artifact/com.yourorg/scala-lib_3)
+[![Build Status](https://github.com/algebrazebra/cronh/actions/workflows/ci.yml/badge.svg)](https://github.com/algebrazebra/cronh/actions)
+[![Scala Steward badge](https://img.shields.io/badge/Scala_Steward-helping-blue.svg)](https://scala-steward.org)
 
 ## Intro
 
@@ -30,7 +25,7 @@ Which definition do you find more readable?
 What's more, you can do this type-safely.
 Not a big surprise for a Scala library, isn't it?
 But it does mean that we can catch a lot of errors at compile time that might otherwise be a wrong or missed job execution.
-This includes things that are legal cron but are impossible schedules such `* * 30 2 *` (every minute on February 30).
+This includes things that are legal cron but are impossible schedules like `* * 30 2 *` (every minute on February 30).
 
 
 ## Quick start
