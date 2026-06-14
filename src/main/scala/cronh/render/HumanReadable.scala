@@ -20,11 +20,25 @@ private object HumanReadable {
 
   def describe(expression: CronExpression[?, ?]): String = {
     val phrases =
-      timePhrase(expression.minute, expression.hour) ::
-        dayPhrases(expression.dayOfMonth, expression.dayOfWeek) :::
-        monthPhrase(expression.month).toList
+      timePhrase(
+        collapseAll(expression.minute),
+        collapseAll(expression.hour)
+      ) ::
+        dayPhrases(
+          collapseAll(expression.dayOfMonth),
+          collapseAll(expression.dayOfWeek)
+        ) :::
+        monthPhrase(collapseAll(expression.month)).toList
     phrases.mkString(", ")
   }
+
+  /** Collapses a field that contains [[Term.All]] to a plain wildcard. A field
+    * whose terms include `All` already denotes every value (Vixie OR, DESIGN.md
+    * §4.4), so the other terms are redundant; rendering them as a list produces
+    * ungrammatical output like "on day every and 1 of the month".
+    */
+  private def collapseAll[A](field: Field[A]): Field[A] =
+    if (field.terms.contains(Term.All)) Field.all else field
 
   private def timePhrase(minute: Field[Minute], hour: Field[Hour]): String =
     (minute.terms, hour.terms) match {
@@ -38,6 +52,8 @@ private object HumanReadable {
         s"Every minute between ${clock(h, Minute(0))} and ${clock(h, Minute(59))}"
       case (Term.Single(m) :: Nil, Term.Range(from, to) :: Nil) =>
         s"At minute ${m.value} past every hour from ${hourName(from)} to ${hourName(to)}"
+      case (Term.All :: Nil, Term.Range(from, to) :: Nil) =>
+        s"Every minute from ${hourName(from)} to ${hourName(to)}"
       case _ =>
         s"At minute ${describe(minute)(_.value.toString)} " +
           s"past hour ${describe(hour)(_.value.toString)}"
