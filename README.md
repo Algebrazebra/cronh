@@ -1,5 +1,5 @@
 # CRONH
-> the _h_ stands for human-friendly
+> _the **h** stands for **human**-friendly_
 
 [![Scala Version](https://img.shields.io/badge/scala-3.x-DC322F.svg)](https://www.scala-lang.org/)
 [![Maven Central](https://img.shields.io/maven-central/v/com.yourorg/scala-lib_3)](https://search.maven.org/artifact/com.yourorg/scala-lib_3)
@@ -38,7 +38,7 @@ libraryDependencies += "io.github.algebrazebra" %% "cronh" % "<insert latest ver
 
 Then using it is quite straightforward:
 
-```Scala3
+```scala 3
 import cronh.dsl.*
 
 Schedule.daily.at(14.h, 30.m).toCron         // "30 14 * * *"
