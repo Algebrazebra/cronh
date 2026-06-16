@@ -32,12 +32,16 @@ class ScheduleTest extends FunSuite {
     )
   }
 
-  test("Schedule.daily renders 0 0 * * *") {
+  test("Schedule.daily renders 0 0 * * * (the blank slate)") {
     assertEquals(Schedule.daily.toCron, "0 0 * * *")
   }
 
   test("Schedule.hourly renders 0 * * * *") {
     assertEquals(Schedule.hourly.toCron, "0 * * * *")
+  }
+
+  test("Schedule.hourly.at(30.m) renders 30 * * * *") {
+    assertEquals(Schedule.hourly.at(30.m).toCron, "30 * * * *")
   }
 
   test("Schedule.monthly renders 0 0 1 * *") {
@@ -48,12 +52,16 @@ class ScheduleTest extends FunSuite {
     assertEquals(Schedule.yearly.toCron, "0 0 1 1 *")
   }
 
+  test("Schedule.everyMinute renders * * * * *") {
+    assertEquals(Schedule.everyMinute.toCron, "* * * * *")
+  }
+
   test("Schedule.weekends.at(8.h) renders 0 8 * * 6,0") {
     assertEquals(Schedule.weekends.at(8.h).toCron, "0 8 * * 6,0")
   }
 
-  test("Schedule.onDay(1.dom, 15.dom).at(6.h) renders 0 6 1,15 * *") {
-    assertEquals(Schedule.onDay(1.dom, 15.dom).at(6.h).toCron, "0 6 1,15 * *")
+  test("Schedule.onThe(1.dom, 15.dom).at(6.h) renders 0 6 1,15 * *") {
+    assertEquals(Schedule.onThe(1.dom, 15.dom).at(6.h).toCron, "0 6 1,15 * *")
   }
 
   test(".on(Weekdays) accepts a prebuilt field") {
@@ -87,19 +95,39 @@ class ScheduleTest extends FunSuite {
     assertEquals(Schedule.daily.at(midnight).toCron, "0 0 * * *")
   }
 
-  test(".in restricts the month") {
+  // Asymmetric defaults (systemd OnCalendar style): an unset date field is `*`,
+  // an unset time field is `0`. So a date-only spec is midnight, never every-minute.
+  test("Schedule.in(June) defaults time to midnight, not every-minute") {
+    assertEquals(Schedule.in(Month.June).toCron, "0 0 * 6 *")
+  }
+
+  test("Schedule.at(30.m) is 30 past hour 0 (00:30 daily)") {
+    assertEquals(Schedule.at(30.m).toCron, "30 0 * * *")
+  }
+
+  test(
+    "every-minute is an explicit opt-in: Schedule.everyMinute.in is rejected"
+  ) {
+    // everyMinute commits the time, so coarse-after-fine .in does not compile.
+    assert(
+      !scala.compiletime.testing.typeChecks(
+        "Schedule.everyMinute.in(cronh.domain.Month.June)"
+      )
+    )
+  }
+
+  test(".everyHour after .in: hourly in June renders 0 * * 6 *") {
+    assertEquals(Schedule.in(Month.June).everyHour.toCron, "0 * * 6 *")
+  }
+
+  test(".in restricts the month (coarse-to-fine: .in before .at)") {
     assertEquals(
-      Schedule.daily.at(9.h).in(Month.June, Month.July).toCron,
+      Schedule.in(Month.June, Month.July).at(9.h).toCron,
       "0 9 * 6,7 *"
     )
   }
 
-  test(".on after .at still works (day spec independent of time)") {
-    assertEquals(Schedule.daily.at(9.h).on(Tue, Thu).toCron, "0 9 * * 2,4")
-  }
-
-  // Mirrors examples/Schedules.scala `nightlyBackup`, whose header claims every
-  // expression is covered by an acceptance test.
+  // Mirrors examples/Schedules.scala `nightlyBackup`.
   test("nightlyBackup renders 30 2 * * *") {
     assertEquals(Schedule.daily.at(2.h, 30.m).toCron, "30 2 * * *")
   }
@@ -107,7 +135,7 @@ class ScheduleTest extends FunSuite {
   // Mirrors examples/Schedules.scala `summerReport`.
   test("summerReport renders 0 0 1 6,7 *") {
     assertEquals(
-      Schedule.monthly.at(midnight).in(Month.June, Month.July).toCron,
+      Schedule.in(Month.June, Month.July).onThe(1.dom).at(midnight).toCron,
       "0 0 1 6,7 *"
     )
   }

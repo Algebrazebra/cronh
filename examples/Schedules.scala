@@ -28,7 +28,7 @@ object Schedules {
   // deployWindow.toCron == "0 9 * * 2-4"
 
   // Payroll on the 1st and 15th at 6 AM.
-  val payroll = Schedule.onDay(1.dom, 15.dom).at(6.h)
+  val payroll = Schedule.onThe(1.dom, 15.dom).at(6.h)
   // payroll.toCron == "0 6 1,15 * *"
 
   // Weekend batch job at 8 AM.
@@ -36,14 +36,17 @@ object Schedules {
   // weekendBatch.toCron == "0 8 * * 6,0"
 
   // Quarterly-ish report: first of the month at midnight, summer months only.
-  val summerReport = Schedule.monthly.at(midnight).in(Month.June, Month.July)
+  // Coarse→fine: months, then day-of-month, then time.
+  val summerReport =
+    Schedule.in(Month.June, Month.July).onThe(1.dom).at(midnight)
   // summerReport.toCron == "0 0 1 6,7 *"
 
   // Human-readable rendering for logs and UIs:
   // standupReminder.humanReadable == "At 12:00 PM, on Monday and Friday"
 
   // These do not compile — the phantom types reject them:
-  // Schedule.daily.at(9.h).at(14.h)   // time set twice
-  // Schedule.on(Mon).onDay(1.dom)     // day-of-week vs day-of-month conflict
+  // Schedule.daily.at(9.h).at(14.h)   // hour set twice
+  // Schedule.on(Mon).onThe(1.dom)     // day-of-week vs day-of-month conflict
+  // Schedule.daily.at(9.h).in(June)   // coarse field after a finer one
   // 25.h                              // Hour must be between 0 and 23
 }

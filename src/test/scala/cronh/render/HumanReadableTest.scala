@@ -68,13 +68,13 @@ class HumanReadableTest extends FunSuite {
 
   test("multiple months join with and") {
     assertEquals(
-      Schedule.daily.at(9.h).in(Month.June, Month.July).humanReadable,
+      Schedule.in(Month.June, Month.July).at(9.h).humanReadable,
       "At 9:00 AM, every day, in June and July"
     )
   }
 
   test("day-of-month and day-of-week together read as or (Vixie OR)") {
-    // The DSL forbids combining .on and .onDay, so build the expression
+    // The DSL forbids combining .on and .onThe, so build the expression
     // directly from the domain model.
     import cronh.domain.*
     val expression = CronExpression(

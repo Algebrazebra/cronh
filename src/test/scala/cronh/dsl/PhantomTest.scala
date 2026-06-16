@@ -8,11 +8,15 @@ class PhantomTest extends FunSuite {
     assertEquals(compileErrors("Schedule.daily.at(9.h)"), "")
   }
 
-  test("setting the time twice is a compile error") {
+  test("setting the hour twice is a compile error") {
     assert(compileErrors("Schedule.daily.at(9.h).at(14.h)").nonEmpty)
   }
 
-  test("setting the time twice after between is a compile error") {
+  test("at(hour) commits the minute: a later at(minute) is a compile error") {
+    assert(compileErrors("Schedule.daily.at(9.h).at(30.m)").nonEmpty)
+  }
+
+  test("setting the minute twice after between is a compile error") {
     assert(
       compileErrors(
         "Schedule.daily.between(9.h, 17.h).at(30.m).at(45.m)"
@@ -24,27 +28,64 @@ class PhantomTest extends FunSuite {
     assert(compileErrors("Schedule.daily.at(9.h).between(9.h, 17.h)").nonEmpty)
   }
 
-  test(".on after .onDay is a compile error") {
-    assert(compileErrors("Schedule.daily.onDay(1.dom).on(Mon)").nonEmpty)
+  test(".on after .onThe is a compile error (day exclusivity)") {
+    assert(compileErrors("Schedule.daily.onThe(1.dom).on(Mon)").nonEmpty)
   }
 
-  test(".onDay after .on is a compile error") {
-    assert(compileErrors("Schedule.daily.on(Mon).onDay(1.dom)").nonEmpty)
+  test(".onThe after .on is a compile error (day exclusivity)") {
+    assert(compileErrors("Schedule.daily.on(Mon).onThe(1.dom)").nonEmpty)
   }
 
   test(".on after Schedule.weekdays is a compile error") {
     assert(compileErrors("Schedule.weekdays.on(Mon)").nonEmpty)
   }
 
-  test(".onDay after Schedule.monthly is a compile error") {
-    assert(compileErrors("Schedule.monthly.onDay(15.dom)").nonEmpty)
+  test(".onThe after Schedule.monthly is a compile error") {
+    assert(compileErrors("Schedule.monthly.onThe(15.dom)").nonEmpty)
+  }
+
+  test(".in twice is a compile error (no silent overwrite)") {
+    assert(
+      compileErrors(
+        "Schedule.in(cronh.domain.Month.June).in(cronh.domain.Month.July)"
+      ).nonEmpty
+    )
+  }
+
+  test("coarse-after-fine: .in after .at is a compile error") {
+    assert(
+      compileErrors(
+        "Schedule.daily.at(9.h).in(cronh.domain.Month.June)"
+      ).nonEmpty
+    )
+  }
+
+  test("coarse-after-fine: .on after .at is a compile error") {
+    assert(compileErrors("Schedule.daily.at(9.h).on(Mon)").nonEmpty)
+  }
+
+  test("coarse-after-fine: .in after .on is a compile error") {
+    assert(
+      compileErrors(
+        "Schedule.on(Mon).in(cronh.domain.Month.June)"
+      ).nonEmpty
+    )
+  }
+
+  test("coarse-after-fine: .in after Schedule.monthly is a compile error") {
+    assert(
+      compileErrors(
+        "Schedule.monthly.in(cronh.domain.Month.June)"
+      ).nonEmpty
+    )
   }
 
   test("valid chains compile and run") {
     val a = Schedule.daily.at(9.h)
-    val b = Schedule.daily.on(Mon).at(noon)
+    val b = Schedule.on(Mon).at(noon)
     val c = Schedule.weekdays.between(9.h, 17.h).at(30.m)
-    val d = Schedule.monthly.at(6.h).in(cronh.domain.Month.March)
-    assert(a != b && c != d)
+    val d = Schedule.in(cronh.domain.Month.March).onThe(1.dom).at(6.h)
+    val e = Schedule.in(cronh.domain.Month.June).everyHour.at(30.m)
+    assert(a != b && c != d && d != e)
   }
 }

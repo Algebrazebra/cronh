@@ -1,73 +1,142 @@
 package cronh.dsl
 
 import cronh.domain.*
+import cronh.domain.FieldState.{Set, Unset}
 
-extension [D <: DaySpec](expression: CronExpression[Status.Unset, D]) {
+/* The fluent refinement verbs. Each `extension` fixes `Unset` in exactly the
+ * slots it requires and leaves the rest as free type parameters, so ~five
+ * extension blocks cover every set/unset combination without enumerating them.
+ *
+ * The receiver patterns encode three rules at once (DESIGN.md, see FieldState):
+ *   - a field may be set only while its own tag is `Unset` (no silent overwrite);
+ *   - `.on`/`.onThe` require *both* day fields `Unset` (mutual exclusivity);
+ *   - every verb requires the strictly-finer fields `Unset` (coarse→fine order:
+ *     month ▸ {day-of-month, day-of-week} ▸ hour ▸ minute).
+ */
 
-  /** Sets the time of day. Only available while the time is unset: a second
-    * `.at` is a compile error rather than a silent overwrite.
-    */
-  def at(hour: Hour, minute: Minute): CronExpression[Status.Set, D] =
+/** Months. The coarsest field, so it requires every finer field still `Unset`:
+  * callable only on a fresh expression (or a preset that has set nothing
+  * finer).
+  */
+extension (expression: CronExpression[Unset, Unset, Unset, Unset, Unset]) {
+
+  /** Restricts the schedule to these months. */
+  def in(
+      first: Month,
+      rest: Month*
+  ): CronExpression[Unset, Unset, Unset, Set, Unset] =
     expression
-      .copy(minute = Field.single(minute), hour = Field.single(hour))
-      .retag[Status.Set, D]
-
-  /** Sets the hour, on the hour (minute 0). */
-  def at(hour: Hour): CronExpression[Status.Set, D] =
-    at(hour, Minute(0))
-
-  /** Sets only the minute, keeping the hour field as already constrained.
-    * Useful after [[between]]: `.between(9.h, 17.h).at(30.m)`.
-    */
-  def at(minute: Minute): CronExpression[Status.Set, D] =
-    expression.copy(minute = Field.single(minute)).retag[Status.Set, D]
-
-  /** Constrains the hour to the inclusive range `[from, to]` without marking
-    * the time as set, so the minute can still be chosen with `.at(30.m)`.
-    */
-  def between(from: Hour, to: Hour): CronExpression[Status.Unset, D] =
-    expression.copy(hour = Field.range(from, to))
+      .copy(month = Field.of(first, rest*))
+      .retag[Unset, Unset, Unset, Set, Unset]
 }
 
-extension [T <: Status](expression: CronExpression[T, DaySpec.NoDay]) {
+/** Day constraints. Both `.on` and `.onThe` require *both* day fields `Unset`
+  * (so picking one removes the other from scope — exclusivity, DESIGN.md §4.5)
+  * and the time still `Unset` (coarse→fine). The month may already be set.
+  */
+extension [Mon <: FieldState](
+    expression: CronExpression[Unset, Unset, Unset, Mon, Unset]
+) {
 
   /** Restricts the schedule to these weekdays. Mutually exclusive with
-    * [[onDay]]: setting both is a compile error (DESIGN.md §2.15).
+    * [[onThe]].
     */
   def on(
       first: DayOfWeek,
       rest: DayOfWeek*
-  ): CronExpression[T, DaySpec.ByWeekday] =
+  ): CronExpression[Unset, Unset, Unset, Mon, Set] =
     expression
       .copy(dayOfWeek = Field.of(first, rest*))
-      .retag[T, DaySpec.ByWeekday]
+      .retag[Unset, Unset, Unset, Mon, Set]
 
   /** Restricts the schedule to a prebuilt weekday selection, e.g.
-    * `.on(Weekdays)` or `.on(Weekends)`.
+    * `.on(Weekdays)` or `.on(Mon to Fri)`.
     *
     * A [[WeekdaySelector]] has no wildcard inhabitant, so this cannot be handed
-    * a `*` that would mark the result `ByWeekday` while matching every day —
-    * that mistake is now a compile error rather than a runtime exception. Leave
-    * the day unconstrained instead of trying to pass a wildcard here.
+    * a `*` that would mark the day constrained while matching every day — that
+    * mistake is a compile error rather than a runtime exception.
     */
-  def on(days: WeekdaySelector): CronExpression[T, DaySpec.ByWeekday] =
-    expression.copy(dayOfWeek = days.toField).retag[T, DaySpec.ByWeekday]
+  def on(days: WeekdaySelector): CronExpression[Unset, Unset, Unset, Mon, Set] =
+    expression
+      .copy(dayOfWeek = days.toField)
+      .retag[Unset, Unset, Unset, Mon, Set]
 
   /** Restricts the schedule to these days of the month. Mutually exclusive with
-    * [[on]]: setting both is a compile error (DESIGN.md §2.15).
+    * [[on]]. Reads as "on the 15th": `.onThe(15.dom)`.
     */
-  def onDay(
+  def onThe(
       first: MonthDay,
       rest: MonthDay*
-  ): CronExpression[T, DaySpec.ByMonthDay] =
+  ): CronExpression[Unset, Unset, Set, Mon, Unset] =
     expression
       .copy(dayOfMonth = Field.of(first, rest*))
-      .retag[T, DaySpec.ByMonthDay]
+      .retag[Unset, Unset, Set, Mon, Unset]
 }
 
-extension [T <: Status, D <: DaySpec](expression: CronExpression[T, D]) {
+/** Hour constraints and the full-time finishers. All require the hour and
+  * minute still `Unset` (coarse→fine); the date fields may already be set.
+  */
+extension [Dom <: FieldState, Mon <: FieldState, Dow <: FieldState](
+    expression: CronExpression[Unset, Unset, Dom, Mon, Dow]
+) {
 
-  /** Restricts the schedule to these months. */
-  def in(first: Month, rest: Month*): CronExpression[T, D] =
-    expression.copy(month = Field.of(first, rest*))
+  /** Constrains the hour to the inclusive range `[from, to]`, leaving the
+    * minute refinable with `.at(30.m)` (defaults to `0`):
+    * `.between(9.h, 17.h)`.
+    */
+  def between(
+      from: Hour,
+      to: Hour
+  ): CronExpression[Unset, Set, Dom, Mon, Dow] =
+    expression
+      .copy(hour = Field.range(from, to))
+      .retag[Unset, Set, Dom, Mon, Dow]
+
+  /** Every hour (`*`), leaving the minute refinable with `.at(30.m)`. The
+    * explicit way to make the hour `*`, since an unset hour defaults to `0`.
+    */
+  def everyHour: CronExpression[Unset, Set, Dom, Mon, Dow] =
+    expression.copy(hour = Field.all).retag[Unset, Set, Dom, Mon, Dow]
+
+  /** Sets the time of day. A second `.at` is a compile error rather than a
+    * silent overwrite.
+    */
+  def at(
+      hour: Hour,
+      minute: Minute
+  ): CronExpression[Set, Set, Dom, Mon, Dow] =
+    expression
+      .copy(minute = Field.single(minute), hour = Field.single(hour))
+      .retag[Set, Set, Dom, Mon, Dow]
+
+  /** Sets the hour, on the hour (commits minute `0`), so a later `.at(30.m)` is
+    * a compile error: use `.at(9.h, 30.m)` for a non-zero minute.
+    */
+  def at(hour: Hour): CronExpression[Set, Set, Dom, Mon, Dow] =
+    at(hour, Minute(0))
+
+  /** Every minute of every hour (`* *`) — the explicit high-frequency opt-in,
+    * since unset time renders `0 0`, not `* *`.
+    */
+  def everyMinute: CronExpression[Set, Set, Dom, Mon, Dow] =
+    expression
+      .copy(minute = Field.all, hour = Field.all)
+      .retag[Set, Set, Dom, Mon, Dow]
+}
+
+/** Minute-only finisher. The finest field, so it requires nothing finer — only
+  * the minute still `Unset` — and accepts any hour state. It remains available
+  * after [[between]] / [[everyHour]] (where `.at(hour)` is rejected) to set the
+  * minute of an hour already constrained: `.between(9.h, 17.h).at(30.m)`.
+  */
+extension [
+    Hr <: FieldState,
+    Dom <: FieldState,
+    Mon <: FieldState,
+    Dow <: FieldState
+](expression: CronExpression[Unset, Hr, Dom, Mon, Dow]) {
+
+  /** Sets only the minute, keeping the hour as already constrained. */
+  def at(minute: Minute): CronExpression[Set, Hr, Dom, Mon, Dow] =
+    expression.copy(minute = Field.single(minute)).retag[Set, Hr, Dom, Mon, Dow]
 }
