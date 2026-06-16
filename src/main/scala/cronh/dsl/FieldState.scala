@@ -1,12 +1,14 @@
-package cronh.domain
+package cronh.dsl
 
-/** Phantom marker tracking whether one field of a [[CronExpression]] has been
+/** Phantom marker tracking whether one field of a [[Schedule]] has been
   * constrained by the DSL.
   *
-  * Never instantiated; exists only at the type level. Each of the five fields
-  * of a [[CronExpression]] carries its own `FieldState`, so a single uniform
-  * rule — "a field may be set only while its tag is [[Unset]]" — gives every
-  * guarantee the DSL needs:
+  * Never instantiated; exists only at the type level, and only in the DSL — the
+  * domain [[cronh.domain.CronExpression]] is plain data and knows nothing about
+  * it (DESIGN.md §2.1, "data first; DSL on top"). Each of the five fields of a
+  * [[Schedule]] carries its own `FieldState`, so a single uniform rule — "a
+  * field may be set only while its tag is [[Unset]]" — gives every guarantee
+  * the builder needs:
   *
   *   - a second write to the same field (`.at(9.h).at(14.h)`,
   *     `.in(June).in(July)`) is a compile error rather than a silent overwrite;
@@ -15,9 +17,7 @@ package cronh.domain
   *   - coarse→fine ordering is enforced by each verb additionally requiring the
   *     strictly-finer fields still `Unset`.
   *
-  * This subsumes the earlier per-concern phantoms (`Status`, `DaySpec`): every
-  * rule is now the same shape instead of a bespoke trait per field. The markers
-  * are nested in the companion to avoid shadowing
+  * The markers are nested in the companion to avoid shadowing
   * `scala.collection.immutable.Set` (DESIGN.md §2.16).
   */
 sealed trait FieldState

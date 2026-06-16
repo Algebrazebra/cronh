@@ -1,7 +1,6 @@
 package cronh.dsl
 
 import cronh.domain.Month
-import cronh.render.toCron
 import munit.FunSuite
 
 class ScheduleTest extends FunSuite {

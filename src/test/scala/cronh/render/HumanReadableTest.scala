@@ -85,7 +85,7 @@ class HumanReadableTest extends FunSuite {
       Field.single(DayOfWeek.Monday)
     )
     assertEquals(
-      expression.humanReadable,
+      HumanReadable.describe(expression),
       "At 9:00 AM, on day 1 of the month or on Monday"
     )
   }
@@ -100,7 +100,7 @@ class HumanReadableTest extends FunSuite {
       Field.all
     )
     assertEquals(
-      expression.humanReadable,
+      HumanReadable.describe(expression),
       "Every minute from 9 AM to 5 PM, every day"
     )
   }
@@ -114,6 +114,6 @@ class HumanReadableTest extends FunSuite {
       Field.all,
       Field.all
     )
-    assertEquals(expression.humanReadable, "At 9:00 AM, every day")
+    assertEquals(HumanReadable.describe(expression), "At 9:00 AM, every day")
   }
 }

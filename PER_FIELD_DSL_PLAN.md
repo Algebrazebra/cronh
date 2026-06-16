@@ -22,21 +22,32 @@ object FieldState:
   sealed trait Set   extends FieldState   // this field was chosen by the DSL
   sealed trait Unset extends FieldState   // still at its default; may be chosen
 
-final case class CronExpression[
+// domain — plain data, no DSL concern (DESIGN.md §2.1):
+final case class CronExpression(minute, hour, dayOfMonth, month, dayOfWeek)
+
+// dsl — the tags live on the builder, zero-cost over the domain value:
+opaque type Schedule[
     +Min <: FieldState, +Hr <: FieldState, +Dom <: FieldState,
     +Mon <: FieldState, +Dow <: FieldState
-](minute, hour, dayOfMonth, month, dayOfWeek)
+] = CronExpression
 
-type FreshCron = CronExpression[Unset, Unset, Unset, Unset, Unset]
+type FreshCron = Schedule[Unset, Unset, Unset, Unset, Unset]
 ```
 
-- **No render gate.** Every `CronExpression` is a valid cron with `.toCron` at every step
-  (`render`/`humanReadable` stay on `CronExpression[?, ?, ?, ?, ?]`, widened to five `?`).
+- **Tags live on `cronh.dsl.Schedule`, not the domain.** The phantom state is a builder
+  concern, so the domain `CronExpression` is plain five-field data; `Schedule` is an
+  `opaque type` over it, carrying the tags at **zero runtime cost** (it *is* a
+  `CronExpression` at runtime) and hiding them from the domain and from callers outside the
+  DSL. `retag` becomes a private `wrap`/`underlying` across the opaque boundary — no
+  `asInstanceOf`, no allocation beyond the `copy`.
+- **No render gate.** Every `Schedule` yields a valid cron: `.toCron` / `.humanReadable`
+  delegate to the domain renderer at every step, and `.toCronExpression` is the escape
+  hatch. `render`/`humanReadable` themselves stay on the plain domain `CronExpression`.
 - The tags enforce: **(a)** a field may be set only while `Unset` (no silent overwrite);
   **(b)** day-of-week and day-of-month are mutually exclusive (the OR footgun, §4.5);
   **(c)** **coarse→fine ordering** — each verb requires every strictly-finer field `Unset`.
-- Phantoms stay **covariant**; raw domain `CronExpression(...)` (phantoms = `Nothing`) is
-  unaffected and still renders (DESIGN.md §2.16). Equality ignores phantoms.
+- Phantoms stay **covariant** (sound: no runtime witness). Equality ignores them — it's the
+  domain value's equality.
 
 ## 3. The default of an unset field — the systemd insight
 
@@ -115,7 +126,7 @@ Schedule.hourly                         // 0 * * * *
 Schedule.in(June).everyHour             // 0 * * 6 *      hourly in June
 Schedule.in(June).everyHour.at(30.m)    // 30 * * 6 *
 Schedule.everyMinute                    // * * * * *
-Schedule.everyMinute.in(June)           // * * * 6 *
+Schedule.in(June).everyMinute           // * * * 6 *  (everyMinute.in would be rejected)
 Schedule.weekdays.at(9.h)               // 0 9 * * 1-5
 Schedule.onThe(15.dom)                  // 0 0 15 * *
 Schedule.on(Mon to Fri).at(9.h)         // 0 9 * * 1-5
@@ -143,20 +154,24 @@ lists/ranges and the "every minute within an hour range" case (`* 9-17 * * *`); 
 
 ## 7. File-by-file changes
 
-New: `domain/FieldState.scala`.
+New: `dsl/FieldState.scala` (the tag — a DSL concern, so it lives in `cronh.dsl`).
 
-Rewritten: `domain/CronExpression.scala` (five tags, `retag`, `FreshCron`),
-`dsl/Schedule.scala` (entries from one blank slate), `dsl/ScheduleOps.scala` (per-field
-verbs, coarse→fine bounds, `.onThe`, `.everyHour`, `.everyMinute`).
+Rewritten: `domain/CronExpression.scala` (plain five-field case class, no type params);
+`dsl/Schedule.scala` (`opaque type Schedule[…]` + entry points from one blank slate);
+`dsl/ScheduleOps.scala` (per-field verbs over `Schedule`, coarse→fine bounds, `.onThe`,
+`.everyHour`, `.everyMinute`, plus `.toCron`/`.humanReadable`/`.toCronExpression`
+delegation).
 
-Modified: `render/CronDialect.scala`, `render/HumanReadable.scala` (widen `[?, ?]` → five
-`?`); `test/dsl/PhantomTest.scala` (double-set, exclusivity, ordering, `.at(9.h).at(30.m)`);
-`test/dsl/ScheduleTest.scala` (new surface + asymmetric-default renders).
+Modified: `render/CronDialect.scala`, `render/HumanReadable.scala` (render plain
+`CronExpression`; `HumanReadable` object made `private[cronh]` so the DSL can delegate);
+`test/dsl/PhantomTest.scala` (double-set, exclusivity, ordering); `test/dsl/ScheduleTest.scala`
+(new surface + asymmetric-default renders); `test/domain/Generators.scala`,
+`test/render/RenderTest.scala` (`Arbitrary[CronExpression]`); `test/render/HumanReadableTest.scala`
+(raw-expression cases call `HumanReadable.describe`).
 
 Removed: `domain/Status.scala`, `domain/DaySpec.scala`.
 
-Unchanged: `WeekdaySelector`, `aliases`, literals, `Generators`/`RenderTest` (arbitrary
-`FreshCron` still renders — no gate).
+Unchanged: `WeekdaySelector`, `aliases`, literals.
 
 ## 8. Verification
 

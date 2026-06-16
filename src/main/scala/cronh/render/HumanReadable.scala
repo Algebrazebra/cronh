@@ -2,7 +2,7 @@ package cronh.render
 
 import cronh.domain.*
 
-extension (expression: CronExpression[?, ?, ?, ?, ?]) {
+extension (expression: CronExpression) {
 
   /** An English description of the schedule, e.g. `"At 2:30 PM, every day"` or
     * `"At 9:00 AM, on weekdays"`.
@@ -16,9 +16,9 @@ extension (expression: CronExpression[?, ?, ?, ?, ?]) {
   def humanReadable: String = HumanReadable.describe(expression)
 }
 
-private object HumanReadable {
+private[cronh] object HumanReadable {
 
-  def describe(expression: CronExpression[?, ?, ?, ?, ?]): String = {
+  def describe(expression: CronExpression): String = {
     val phrases =
       timePhrase(
         collapseAll(expression.minute),

@@ -1,33 +1,55 @@
 package cronh.dsl
 
 import cronh.domain.*
-import cronh.domain.FieldState.{Set, Unset}
+import cronh.dsl.FieldState.{Set, Unset}
+import cronh.render.{CronDialect, HumanReadable}
 
-/* The fluent refinement verbs. Each `extension` fixes `Unset` in exactly the
- * slots it requires and leaves the rest as free type parameters, so ~five
- * extension blocks cover every set/unset combination without enumerating them.
+/* The fluent refinement verbs, as extensions on `Schedule`. Each `extension`
+ * fixes `Unset` in exactly the slots it requires and leaves the rest as free
+ * type parameters, so ~five extension blocks cover every set/unset combination
+ * without enumerating them.
  *
  * The receiver patterns encode three rules at once (DESIGN.md, see FieldState):
  *   - a field may be set only while its own tag is `Unset` (no silent overwrite);
  *   - `.on`/`.onThe` require *both* day fields `Unset` (mutual exclusivity);
  *   - every verb requires the strictly-finer fields `Unset` (coarse→fine order:
  *     month ▸ {day-of-month, day-of-week} ▸ hour ▸ minute).
+ *
+ * `Schedule` is opaque here, so each verb edits the wrapped `CronExpression`
+ * through `Schedule.{underlying, wrap}` (via the `remap` helper) and re-tags via
+ * the declared return type — no `asInstanceOf`, no allocation beyond the `copy`.
  */
 
+extension [
+    Min <: FieldState,
+    Hr <: FieldState,
+    Dom <: FieldState,
+    Mon <: FieldState,
+    Dow <: FieldState
+](schedule: Schedule[Min, Hr, Dom, Mon, Dow]) {
+
+  /** Edit the wrapped expression and re-tag to the declared result type. */
+  private def remap[
+      A <: FieldState,
+      B <: FieldState,
+      C <: FieldState,
+      D <: FieldState,
+      E <: FieldState
+  ](f: CronExpression => CronExpression): Schedule[A, B, C, D, E] =
+    Schedule.wrap(f(Schedule.underlying(schedule)))
+}
+
 /** Months. The coarsest field, so it requires every finer field still `Unset`:
-  * callable only on a fresh expression (or a preset that has set nothing
-  * finer).
+  * callable only on a fresh schedule (or a preset that has set nothing finer).
   */
-extension (expression: CronExpression[Unset, Unset, Unset, Unset, Unset]) {
+extension (schedule: Schedule[Unset, Unset, Unset, Unset, Unset]) {
 
   /** Restricts the schedule to these months. */
   def in(
       first: Month,
       rest: Month*
-  ): CronExpression[Unset, Unset, Unset, Set, Unset] =
-    expression
-      .copy(month = Field.of(first, rest*))
-      .retag[Unset, Unset, Unset, Set, Unset]
+  ): Schedule[Unset, Unset, Unset, Set, Unset] =
+    schedule.remap(_.copy(month = Field.of(first, rest*)))
 }
 
 /** Day constraints. Both `.on` and `.onThe` require *both* day fields `Unset`
@@ -35,7 +57,7 @@ extension (expression: CronExpression[Unset, Unset, Unset, Unset, Unset]) {
   * and the time still `Unset` (coarse→fine). The month may already be set.
   */
 extension [Mon <: FieldState](
-    expression: CronExpression[Unset, Unset, Unset, Mon, Unset]
+    schedule: Schedule[Unset, Unset, Unset, Mon, Unset]
 ) {
 
   /** Restricts the schedule to these weekdays. Mutually exclusive with
@@ -44,10 +66,8 @@ extension [Mon <: FieldState](
   def on(
       first: DayOfWeek,
       rest: DayOfWeek*
-  ): CronExpression[Unset, Unset, Unset, Mon, Set] =
-    expression
-      .copy(dayOfWeek = Field.of(first, rest*))
-      .retag[Unset, Unset, Unset, Mon, Set]
+  ): Schedule[Unset, Unset, Unset, Mon, Set] =
+    schedule.remap(_.copy(dayOfWeek = Field.of(first, rest*)))
 
   /** Restricts the schedule to a prebuilt weekday selection, e.g.
     * `.on(Weekdays)` or `.on(Mon to Fri)`.
@@ -56,10 +76,8 @@ extension [Mon <: FieldState](
     * a `*` that would mark the day constrained while matching every day — that
     * mistake is a compile error rather than a runtime exception.
     */
-  def on(days: WeekdaySelector): CronExpression[Unset, Unset, Unset, Mon, Set] =
-    expression
-      .copy(dayOfWeek = days.toField)
-      .retag[Unset, Unset, Unset, Mon, Set]
+  def on(days: WeekdaySelector): Schedule[Unset, Unset, Unset, Mon, Set] =
+    schedule.remap(_.copy(dayOfWeek = days.toField))
 
   /** Restricts the schedule to these days of the month. Mutually exclusive with
     * [[on]]. Reads as "on the 15th": `.onThe(15.dom)`.
@@ -67,17 +85,15 @@ extension [Mon <: FieldState](
   def onThe(
       first: MonthDay,
       rest: MonthDay*
-  ): CronExpression[Unset, Unset, Set, Mon, Unset] =
-    expression
-      .copy(dayOfMonth = Field.of(first, rest*))
-      .retag[Unset, Unset, Set, Mon, Unset]
+  ): Schedule[Unset, Unset, Set, Mon, Unset] =
+    schedule.remap(_.copy(dayOfMonth = Field.of(first, rest*)))
 }
 
 /** Hour constraints and the full-time finishers. All require the hour and
   * minute still `Unset` (coarse→fine); the date fields may already be set.
   */
 extension [Dom <: FieldState, Mon <: FieldState, Dow <: FieldState](
-    expression: CronExpression[Unset, Unset, Dom, Mon, Dow]
+    schedule: Schedule[Unset, Unset, Dom, Mon, Dow]
 ) {
 
   /** Constrains the hour to the inclusive range `[from, to]`, leaving the
@@ -87,16 +103,14 @@ extension [Dom <: FieldState, Mon <: FieldState, Dow <: FieldState](
   def between(
       from: Hour,
       to: Hour
-  ): CronExpression[Unset, Set, Dom, Mon, Dow] =
-    expression
-      .copy(hour = Field.range(from, to))
-      .retag[Unset, Set, Dom, Mon, Dow]
+  ): Schedule[Unset, Set, Dom, Mon, Dow] =
+    schedule.remap(_.copy(hour = Field.range(from, to)))
 
   /** Every hour (`*`), leaving the minute refinable with `.at(30.m)`. The
     * explicit way to make the hour `*`, since an unset hour defaults to `0`.
     */
-  def everyHour: CronExpression[Unset, Set, Dom, Mon, Dow] =
-    expression.copy(hour = Field.all).retag[Unset, Set, Dom, Mon, Dow]
+  def everyHour: Schedule[Unset, Set, Dom, Mon, Dow] =
+    schedule.remap(_.copy(hour = Field.all))
 
   /** Sets the time of day. A second `.at` is a compile error rather than a
     * silent overwrite.
@@ -104,24 +118,22 @@ extension [Dom <: FieldState, Mon <: FieldState, Dow <: FieldState](
   def at(
       hour: Hour,
       minute: Minute
-  ): CronExpression[Set, Set, Dom, Mon, Dow] =
-    expression
-      .copy(minute = Field.single(minute), hour = Field.single(hour))
-      .retag[Set, Set, Dom, Mon, Dow]
+  ): Schedule[Set, Set, Dom, Mon, Dow] =
+    schedule.remap(
+      _.copy(minute = Field.single(minute), hour = Field.single(hour))
+    )
 
   /** Sets the hour, on the hour (commits minute `0`), so a later `.at(30.m)` is
     * a compile error: use `.at(9.h, 30.m)` for a non-zero minute.
     */
-  def at(hour: Hour): CronExpression[Set, Set, Dom, Mon, Dow] =
+  def at(hour: Hour): Schedule[Set, Set, Dom, Mon, Dow] =
     at(hour, Minute(0))
 
   /** Every minute of every hour (`* *`) — the explicit high-frequency opt-in,
     * since unset time renders `0 0`, not `* *`.
     */
-  def everyMinute: CronExpression[Set, Set, Dom, Mon, Dow] =
-    expression
-      .copy(minute = Field.all, hour = Field.all)
-      .retag[Set, Set, Dom, Mon, Dow]
+  def everyMinute: Schedule[Set, Set, Dom, Mon, Dow] =
+    schedule.remap(_.copy(minute = Field.all, hour = Field.all))
 }
 
 /** Minute-only finisher. The finest field, so it requires nothing finer — only
@@ -134,9 +146,33 @@ extension [
     Dom <: FieldState,
     Mon <: FieldState,
     Dow <: FieldState
-](expression: CronExpression[Unset, Hr, Dom, Mon, Dow]) {
+](schedule: Schedule[Unset, Hr, Dom, Mon, Dow]) {
 
   /** Sets only the minute, keeping the hour as already constrained. */
-  def at(minute: Minute): CronExpression[Set, Hr, Dom, Mon, Dow] =
-    expression.copy(minute = Field.single(minute)).retag[Set, Hr, Dom, Mon, Dow]
+  def at(minute: Minute): Schedule[Set, Hr, Dom, Mon, Dow] =
+    schedule.remap(_.copy(minute = Field.single(minute)))
+}
+
+/** Rendering, by delegating to the domain `CronExpression` renderers. Available
+  * at every step — a `Schedule` is always a valid cron — and the escape hatch
+  * [[toCronExpression]] hands back the plain domain value.
+  */
+extension [
+    Min <: FieldState,
+    Hr <: FieldState,
+    Dom <: FieldState,
+    Mon <: FieldState,
+    Dow <: FieldState
+](schedule: Schedule[Min, Hr, Dom, Mon, Dow]) {
+
+  /** The underlying domain expression. */
+  def toCronExpression: CronExpression = Schedule.underlying(schedule)
+
+  /** Renders as a cron string under the given dialect (defaults to Unix). */
+  def toCron(using dialect: CronDialect): String =
+    dialect.render(Schedule.underlying(schedule))
+
+  /** An English description, e.g. `"At 9:00 AM, on weekdays"`. */
+  def humanReadable: String =
+    HumanReadable.describe(Schedule.underlying(schedule))
 }
