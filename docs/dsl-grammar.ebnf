@@ -1,0 +1,45 @@
+/* cronh Schedule DSL grammar (W3C EBNF).
+ *
+ * Paste into https://www.bottlecaps.de/rr/ui (Edit Grammar tab) to render.
+ *
+ * Left-to-right is the coarse->fine type-state: months, then day, then time,
+ * each optional and never backwards. The grammar captures the allowed call
+ * ORDER. Three rules it cannot express, enforced by the phantom types instead:
+ *   - a field may be set only once (no `.at(9.h).at(14.h)`, `.in(June).in(July)`);
+ *   - `.on` (day-of-week) and `.onThe` (day-of-month) are mutually exclusive;
+ *   - `.at(hour)` commits the minute, so a following `.at(minute)` is rejected.
+ * Presets are entry shortcuts for particular states (e.g. `.weekdays` is
+ * `.on(Mon to Fri)`) and continue with the finer segments.
+ */
+
+schedule        ::= 'Schedule' ( months? day? time? | preset )
+
+preset          ::= 'Schedule' ( '.daily' | '.hourly' | '.monthly' | '.yearly'
+                               | '.weekdays' | '.weekends' | '.everyMinute' )
+
+months          ::= '.in(' month ( ',' month )* ')'
+
+day             ::= '.on(' weekday ( ',' weekday )* ')'
+                  | '.on(' weekdaySelector ')'
+                  | '.onThe(' monthDay ( ',' monthDay )* ')'
+
+time            ::= '.at(' hour ( ',' minute )? ')'
+                  | '.at(' minute ')'
+                  | hourRange ( '.at(' minute ')' )?
+                  | '.everyMinute'
+
+hourRange       ::= '.between(' hour ',' hour ')' | '.everyHour'
+
+weekdaySelector ::= 'Weekdays' | 'Weekends'
+                  | weekday 'to' weekday
+                  | 'WeekdaySelector(' weekday ( ',' weekday )* ')'
+
+weekday         ::= 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun'
+
+month           ::= 'Month.January' | '…' | 'Month.December'
+
+monthDay        ::= /* 1 … 31 */ '.dom'
+
+hour            ::= /* 0 … 23 */ '.h' | 'midnight' | 'noon'
+
+minute          ::= /* 0 … 59 */ '.m'

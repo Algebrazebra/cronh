@@ -1,0 +1,174 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="534" height="2180" viewBox="0 0 534 2180"><style>	.railroad-diagram {
+		background-color:hsl(30,20%,95%);
+	}
+	.railroad-diagram path {
+		stroke-width:3;
+		stroke:black;
+		fill:rgba(0,0,0,0);
+	}
+	.railroad-diagram text {
+		font:bold 14px monospace;
+		text-anchor:middle;
+	}
+	.railroad-diagram text.label{
+		text-anchor:start;
+	}
+	.railroad-diagram text.comment{
+		font:italic 12px monospace;
+	}
+	.railroad-diagram rect{
+		stroke-width:3;
+		stroke:black;
+		fill:hsl(120,100%,90%);
+	}
+	.railroad-diagram rect.group-box {
+		stroke: gray;
+		stroke-dasharray: 10 5;
+		fill: none;
+	}
+ text.rr-label{font:bold 15px sans-serif;fill:#1a5}svg{background:#fff}</style><rect width="534" height="2180" fill="#fff"/><text x="8" y="26" class="rr-label">schedule</text><g class="railroad-diagram" transform="translate(8,36)">
+<g transform="translate(.5 .5)">
+<g>
+<path d="M20 21v20m10 -20v20m-10 -10h20" /></g><path d="M40 31h10" /><g class="terminal ">
+<path d="M50 31h0.0" /><path d="M138.0 31h0.0" /><rect height="22" rx="10" ry="10" width="88" x="50" y="20"></rect><text x="94" y="35">Schedule</text></g><path d="M138.0 31h10" /><g>
+<path d="M148.0 31h0.0" /><path d="M478.5 31h0.0" /><path d="M148.0 31h20" /><g>
+<path d="M168.0 31h0.0" /><path d="M458.5 31h0.0" /><g>
+<path d="M168.0 31h0.0" /><path d="M279.0 31h0.0" /><path d="M168.0 31h20" /><g>
+<path d="M188.0 31h71.0" /></g><path d="M259.0 31h20" /><path d="M168.0 31a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10" /><g class="non-terminal ">
+<path d="M188.0 51h0.0" /><path d="M259.0 51h0.0" /><rect height="22" width="71" x="188" y="40"></rect><text x="223.5" y="55">months</text></g><path d="M259.0 51a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10" /></g><g>
+<path d="M279.0 31h0.0" /><path d="M364.5 31h0.0" /><path d="M279.0 31h20" /><g>
+<path d="M299.0 31h45.5" /></g><path d="M344.5 31h20" /><path d="M279.0 31a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10" /><g class="non-terminal ">
+<path d="M299.0 51h0.0" /><path d="M344.5 51h0.0" /><rect height="22" width="45.5" x="299" y="40"></rect><text x="321.75" y="55">day</text></g><path d="M344.5 51a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10" /></g><g>
+<path d="M364.5 31h0.0" /><path d="M458.5 31h0.0" /><path d="M364.5 31h20" /><g>
+<path d="M384.5 31h54.0" /></g><path d="M438.5 31h20" /><path d="M364.5 31a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10" /><g class="non-terminal ">
+<path d="M384.5 51h0.0" /><path d="M438.5 51h0.0" /><rect height="22" width="54" x="384.5" y="40"></rect><text x="411.5" y="55">time</text></g><path d="M438.5 51a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10" /></g></g><path d="M458.5 31h20" /><path d="M148.0 31a10 10 0 0 1 10 10v30a10 10 0 0 0 10 10" /><g class="non-terminal ">
+<path d="M168.0 81h109.75" /><path d="M348.75 81h109.75" /><rect height="22" width="71" x="277.75" y="70"></rect><text x="313.25" y="85">preset</text></g><path d="M458.5 81a10 10 0 0 0 10 -10v-30a10 10 0 0 1 10 -10" /></g><path d="M 478.5 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path></g></g><text x="8" y="182" class="rr-label">preset</text><g class="railroad-diagram" transform="translate(8,192)">
+<g transform="translate(.5 .5)">
+<g>
+<path d="M20 21v20m10 -20v20m-10 -10h20" /></g><path d="M40 31h10" /><g class="terminal ">
+<path d="M50 31h0.0" /><path d="M138.0 31h0.0" /><rect height="22" rx="10" ry="10" width="88" x="50" y="20"></rect><text x="94" y="35">Schedule</text></g><path d="M138.0 31h10" /><g>
+<path d="M148.0 31h0.0" /><path d="M310.0 31h0.0" /><path d="M148.0 31h20" /><g class="terminal ">
+<path d="M168.0 31h25.5" /><path d="M264.5 31h25.5" /><rect height="22" rx="10" ry="10" width="71" x="193.5" y="20"></rect><text x="229" y="35">.daily</text></g><path d="M290.0 31h20" /><path d="M148.0 31a10 10 0 0 1 10 10v10a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M168.0 61h21.25" /><path d="M268.75 61h21.25" /><rect height="22" rx="10" ry="10" width="79.5" x="189.25" y="50"></rect><text x="229" y="65">.hourly</text></g><path d="M290.0 61a10 10 0 0 0 10 -10v-10a10 10 0 0 1 10 -10" /><path d="M148.0 31a10 10 0 0 1 10 10v40a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M168.0 91h17.0" /><path d="M273.0 91h17.0" /><rect height="22" rx="10" ry="10" width="88" x="185" y="80"></rect><text x="229" y="95">.monthly</text></g><path d="M290.0 91a10 10 0 0 0 10 -10v-40a10 10 0 0 1 10 -10" /><path d="M148.0 31a10 10 0 0 1 10 10v70a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M168.0 121h21.25" /><path d="M268.75 121h21.25" /><rect height="22" rx="10" ry="10" width="79.5" x="189.25" y="110"></rect><text x="229" y="125">.yearly</text></g><path d="M290.0 121a10 10 0 0 0 10 -10v-70a10 10 0 0 1 10 -10" /><path d="M148.0 31a10 10 0 0 1 10 10v100a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M168.0 151h12.75" /><path d="M277.25 151h12.75" /><rect height="22" rx="10" ry="10" width="96.5" x="180.75" y="140"></rect><text x="229" y="155">.weekdays</text></g><path d="M290.0 151a10 10 0 0 0 10 -10v-100a10 10 0 0 1 10 -10" /><path d="M148.0 31a10 10 0 0 1 10 10v130a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M168.0 181h12.75" /><path d="M277.25 181h12.75" /><rect height="22" rx="10" ry="10" width="96.5" x="180.75" y="170"></rect><text x="229" y="185">.weekends</text></g><path d="M290.0 181a10 10 0 0 0 10 -10v-130a10 10 0 0 1 10 -10" /><path d="M148.0 31a10 10 0 0 1 10 10v160a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M168.0 211h0.0" /><path d="M290.0 211h0.0" /><rect height="22" rx="10" ry="10" width="122" x="168" y="200"></rect><text x="229" y="215">.everyMinute</text></g><path d="M290.0 211a10 10 0 0 0 10 -10v-160a10 10 0 0 1 10 -10" /></g><path d="M 310.0 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path></g></g><text x="8" y="468" class="rr-label">months</text><g class="railroad-diagram" transform="translate(8,478)">
+<g transform="translate(.5 .5)">
+<g>
+<path d="M20 21v20m10 -20v20m-10 -10h20" /></g><path d="M40 31h10" /><g class="terminal ">
+<path d="M50 31h0.0" /><path d="M104.0 31h0.0" /><rect height="22" rx="10" ry="10" width="54" x="50" y="20"></rect><text x="77" y="35">.in(</text></g><path d="M104.0 31h10" /><path d="M114.0 31h10" /><g>
+<path d="M124.0 31h0.0" /><path d="M206.5 31h0.0" /><path d="M124.0 31h10" /><g class="non-terminal ">
+<path d="M134.0 31h0.0" /><path d="M196.5 31h0.0" /><rect height="22" width="62.5" x="134" y="20"></rect><text x="165.25" y="35">month</text></g><path d="M196.5 31h10" /><path d="M134.0 31a10 10 0 0 0 -10 10v10a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M134.0 61h17.0" /><path d="M179.5 61h17.0" /><rect height="22" rx="10" ry="10" width="28.5" x="151" y="50"></rect><text x="165.25" y="65">,</text></g><path d="M196.5 61a10 10 0 0 0 10 -10v-10a10 10 0 0 0 -10 -10" /></g><path d="M206.5 31h10" /><path d="M216.5 31h10" /><g class="terminal ">
+<path d="M226.5 31h0.0" /><path d="M255.0 31h0.0" /><rect height="22" rx="10" ry="10" width="28.5" x="226.5" y="20"></rect><text x="240.75" y="35">)</text></g><path d="M255.0 31h10" /><path d="M 265.0 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path></g></g><text x="8" y="604" class="rr-label">day</text><g class="railroad-diagram" transform="translate(8,614)">
+<g transform="translate(.5 .5)">
+<g>
+<path d="M20 21v20m10 -20v20m-10 -10h20" /></g><g>
+<path d="M40 31h0.0" /><path d="M350.0 31h0.0" /><path d="M40.0 31h20" /><g>
+<path d="M60.0 31h24.0" /><path d="M306.0 31h24.0" /><g class="terminal ">
+<path d="M84.0 31h0.0" /><path d="M138.0 31h0.0" /><rect height="22" rx="10" ry="10" width="54" x="84" y="20"></rect><text x="111" y="35">.on(</text></g><path d="M138.0 31h10" /><path d="M148.0 31h10" /><g>
+<path d="M158.0 31h0.0" /><path d="M257.5 31h0.0" /><path d="M158.0 31h10" /><g class="non-terminal ">
+<path d="M168.0 31h0.0" /><path d="M247.5 31h0.0" /><rect height="22" width="79.5" x="168" y="20"></rect><text x="207.75" y="35">weekday</text></g><path d="M247.5 31h10" /><path d="M168.0 31a10 10 0 0 0 -10 10v10a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M168.0 61h25.5" /><path d="M222.0 61h25.5" /><rect height="22" rx="10" ry="10" width="28.5" x="193.5" y="50"></rect><text x="207.75" y="65">,</text></g><path d="M247.5 61a10 10 0 0 0 10 -10v-10a10 10 0 0 0 -10 -10" /></g><path d="M257.5 31h10" /><path d="M267.5 31h10" /><g class="terminal ">
+<path d="M277.5 31h0.0" /><path d="M306.0 31h0.0" /><rect height="22" rx="10" ry="10" width="28.5" x="277.5" y="20"></rect><text x="291.75" y="35">)</text></g></g><path d="M330.0 31h20" /><path d="M40.0 31a10 10 0 0 1 10 10v40a10 10 0 0 0 10 10" /><g>
+<path d="M60.0 91h0.0" /><path d="M330.0 91h0.0" /><g class="terminal ">
+<path d="M60.0 91h0.0" /><path d="M114.0 91h0.0" /><rect height="22" rx="10" ry="10" width="54" x="60" y="80"></rect><text x="87" y="95">.on(</text></g><path d="M114.0 91h10" /><path d="M124.0 91h10" /><g class="non-terminal ">
+<path d="M134.0 91h0.0" /><path d="M281.5 91h0.0" /><rect height="22" width="147.5" x="134" y="80"></rect><text x="207.75" y="95">weekdaySelector</text></g><path d="M281.5 91h10" /><path d="M291.5 91h10" /><g class="terminal ">
+<path d="M301.5 91h0.0" /><path d="M330.0 91h0.0" /><rect height="22" rx="10" ry="10" width="28.5" x="301.5" y="80"></rect><text x="315.75" y="95">)</text></g></g><path d="M330.0 91a10 10 0 0 0 10 -10v-40a10 10 0 0 1 10 -10" /><path d="M40.0 31a10 10 0 0 1 10 10v70a10 10 0 0 0 10 10" /><g>
+<path d="M60.0 121h7.0" /><path d="M323.0 121h7.0" /><g class="terminal ">
+<path d="M67.0 121h0.0" /><path d="M146.5 121h0.0" /><rect height="22" rx="10" ry="10" width="79.5" x="67" y="110"></rect><text x="106.75" y="125">.onThe(</text></g><path d="M146.5 121h10" /><path d="M156.5 121h10" /><g>
+<path d="M166.5 121h0.0" /><path d="M274.5 121h0.0" /><path d="M166.5 121h10" /><g class="non-terminal ">
+<path d="M176.5 121h0.0" /><path d="M264.5 121h0.0" /><rect height="22" width="88" x="176.5" y="110"></rect><text x="220.5" y="125">monthDay</text></g><path d="M264.5 121h10" /><path d="M176.5 121a10 10 0 0 0 -10 10v10a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M176.5 151h29.75" /><path d="M234.75 151h29.75" /><rect height="22" rx="10" ry="10" width="28.5" x="206.25" y="140"></rect><text x="220.5" y="155">,</text></g><path d="M264.5 151a10 10 0 0 0 10 -10v-10a10 10 0 0 0 -10 -10" /></g><path d="M274.5 121h10" /><path d="M284.5 121h10" /><g class="terminal ">
+<path d="M294.5 121h0.0" /><path d="M323.0 121h0.0" /><rect height="22" rx="10" ry="10" width="28.5" x="294.5" y="110"></rect><text x="308.75" y="125">)</text></g></g><path d="M330.0 121a10 10 0 0 0 10 -10v-70a10 10 0 0 1 10 -10" /></g><path d="M 350.0 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path></g></g><text x="8" y="830" class="rr-label">time</text><g class="railroad-diagram" transform="translate(8,840)">
+<g transform="translate(.5 .5)">
+<g>
+<path d="M20 21v20m10 -20v20m-10 -10h20" /></g><g>
+<path d="M40 31h0.0" /><path d="M420.0 31h0.0" /><path d="M40.0 31h20" /><g>
+<path d="M60.0 31h2.0" /><path d="M398.0 31h2.0" /><g class="terminal ">
+<path d="M62.0 31h0.0" /><path d="M116.0 31h0.0" /><rect height="22" rx="10" ry="10" width="54" x="62" y="20"></rect><text x="89" y="35">.at(</text></g><path d="M116.0 31h10" /><path d="M126.0 31h10" /><g class="non-terminal ">
+<path d="M136.0 31h0.0" /><path d="M190.0 31h0.0" /><rect height="22" width="54" x="136" y="20"></rect><text x="163" y="35">hour</text></g><path d="M190.0 31h10" /><g>
+<path d="M200.0 31h0.0" /><path d="M359.5 31h0.0" /><path d="M200.0 31h20" /><g>
+<path d="M220.0 31h119.5" /></g><path d="M339.5 31h20" /><path d="M200.0 31a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10" /><g>
+<path d="M220.0 51h0.0" /><path d="M339.5 51h0.0" /><g class="terminal ">
+<path d="M220.0 51h0.0" /><path d="M248.5 51h0.0" /><rect height="22" rx="10" ry="10" width="28.5" x="220" y="40"></rect><text x="234.25" y="55">,</text></g><path d="M248.5 51h10" /><path d="M258.5 51h10" /><g class="non-terminal ">
+<path d="M268.5 51h0.0" /><path d="M339.5 51h0.0" /><rect height="22" width="71" x="268.5" y="40"></rect><text x="304" y="55">minute</text></g></g><path d="M339.5 51a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10" /></g><path d="M359.5 31h10" /><g class="terminal ">
+<path d="M369.5 31h0.0" /><path d="M398.0 31h0.0" /><rect height="22" rx="10" ry="10" width="28.5" x="369.5" y="20"></rect><text x="383.75" y="35">)</text></g></g><path d="M400.0 31h20" /><path d="M40.0 31a10 10 0 0 1 10 10v30a10 10 0 0 0 10 10" /><g>
+<path d="M60.0 81h73.25" /><path d="M326.75 81h73.25" /><g class="terminal ">
+<path d="M133.25 81h0.0" /><path d="M187.25 81h0.0" /><rect height="22" rx="10" ry="10" width="54" x="133.25" y="70"></rect><text x="160.25" y="85">.at(</text></g><path d="M187.25 81h10" /><path d="M197.25 81h10" /><g class="non-terminal ">
+<path d="M207.25 81h0.0" /><path d="M278.25 81h0.0" /><rect height="22" width="71" x="207.25" y="70"></rect><text x="242.75" y="85">minute</text></g><path d="M278.25 81h10" /><path d="M288.25 81h10" /><g class="terminal ">
+<path d="M298.25 81h0.0" /><path d="M326.75 81h0.0" /><rect height="22" rx="10" ry="10" width="28.5" x="298.25" y="70"></rect><text x="312.5" y="85">)</text></g></g><path d="M400.0 81a10 10 0 0 0 10 -10v-30a10 10 0 0 1 10 -10" /><path d="M40.0 31a10 10 0 0 1 10 10v60a10 10 0 0 0 10 10" /><g>
+<path d="M60.0 111h0.0" /><path d="M400.0 111h0.0" /><g class="non-terminal ">
+<path d="M60.0 111h0.0" /><path d="M156.5 111h0.0" /><rect height="22" width="96.5" x="60" y="100"></rect><text x="108.25" y="115">hourRange</text></g><path d="M156.5 111h10" /><g>
+<path d="M166.5 111h0.0" /><path d="M400.0 111h0.0" /><path d="M166.5 111h20" /><g>
+<path d="M186.5 111h193.5" /></g><path d="M380.0 111h20" /><path d="M166.5 111a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10" /><g>
+<path d="M186.5 131h0.0" /><path d="M380.0 131h0.0" /><g class="terminal ">
+<path d="M186.5 131h0.0" /><path d="M240.5 131h0.0" /><rect height="22" rx="10" ry="10" width="54" x="186.5" y="120"></rect><text x="213.5" y="135">.at(</text></g><path d="M240.5 131h10" /><path d="M250.5 131h10" /><g class="non-terminal ">
+<path d="M260.5 131h0.0" /><path d="M331.5 131h0.0" /><rect height="22" width="71" x="260.5" y="120"></rect><text x="296" y="135">minute</text></g><path d="M331.5 131h10" /><path d="M341.5 131h10" /><g class="terminal ">
+<path d="M351.5 131h0.0" /><path d="M380.0 131h0.0" /><rect height="22" rx="10" ry="10" width="28.5" x="351.5" y="120"></rect><text x="365.75" y="135">)</text></g></g><path d="M380.0 131a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10" /></g></g><path d="M400.0 111a10 10 0 0 0 10 -10v-60a10 10 0 0 1 10 -10" /><path d="M40.0 31a10 10 0 0 1 10 10v110a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M60.0 161h109.0" /><path d="M291.0 161h109.0" /><rect height="22" rx="10" ry="10" width="122" x="169" y="150"></rect><text x="230" y="165">.everyMinute</text></g><path d="M400.0 161a10 10 0 0 0 10 -10v-110a10 10 0 0 1 10 -10" /></g><path d="M 420.0 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path></g></g><text x="8" y="1066" class="rr-label">hourRange</text><g class="railroad-diagram" transform="translate(8,1076)">
+<g transform="translate(.5 .5)">
+<g>
+<path d="M20 21v20m10 -20v20m-10 -10h20" /></g><g>
+<path d="M40 31h0.0" /><path d="M421.5 31h0.0" /><path d="M40.0 31h20" /><g>
+<path d="M60.0 31h0.0" /><path d="M401.5 31h0.0" /><g class="terminal ">
+<path d="M60.0 31h0.0" /><path d="M156.5 31h0.0" /><rect height="22" rx="10" ry="10" width="96.5" x="60" y="20"></rect><text x="108.25" y="35">.between(</text></g><path d="M156.5 31h10" /><path d="M166.5 31h10" /><g class="non-terminal ">
+<path d="M176.5 31h0.0" /><path d="M230.5 31h0.0" /><rect height="22" width="54" x="176.5" y="20"></rect><text x="203.5" y="35">hour</text></g><path d="M230.5 31h10" /><path d="M240.5 31h10" /><g class="terminal ">
+<path d="M250.5 31h0.0" /><path d="M279.0 31h0.0" /><rect height="22" rx="10" ry="10" width="28.5" x="250.5" y="20"></rect><text x="264.75" y="35">,</text></g><path d="M279.0 31h10" /><path d="M289.0 31h10" /><g class="non-terminal ">
+<path d="M299.0 31h0.0" /><path d="M353.0 31h0.0" /><rect height="22" width="54" x="299" y="20"></rect><text x="326" y="35">hour</text></g><path d="M353.0 31h10" /><path d="M363.0 31h10" /><g class="terminal ">
+<path d="M373.0 31h0.0" /><path d="M401.5 31h0.0" /><rect height="22" rx="10" ry="10" width="28.5" x="373" y="20"></rect><text x="387.25" y="35">)</text></g></g><path d="M401.5 31h20" /><path d="M40.0 31a10 10 0 0 1 10 10v10a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M60.0 61h118.25" /><path d="M283.25 61h118.25" /><rect height="22" rx="10" ry="10" width="105" x="178.25" y="50"></rect><text x="230.75" y="65">.everyHour</text></g><path d="M401.5 61a10 10 0 0 0 10 -10v-10a10 10 0 0 1 10 -10" /></g><path d="M 421.5 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path></g></g><text x="8" y="1202" class="rr-label">weekdaySelector</text><g class="railroad-diagram" transform="translate(8,1212)">
+<g transform="translate(.5 .5)">
+<g>
+<path d="M20 21v20m10 -20v20m-10 -10h20" /></g><g>
+<path d="M40 31h0.0" /><path d="M404.0 31h0.0" /><path d="M40.0 31h20" /><g class="terminal ">
+<path d="M60.0 31h118.0" /><path d="M266.0 31h118.0" /><rect height="22" rx="10" ry="10" width="88" x="178" y="20"></rect><text x="222" y="35">Weekdays</text></g><path d="M384.0 31h20" /><path d="M40.0 31a10 10 0 0 1 10 10v10a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M60.0 61h118.0" /><path d="M266.0 61h118.0" /><rect height="22" rx="10" ry="10" width="88" x="178" y="50"></rect><text x="222" y="65">Weekends</text></g><path d="M384.0 61a10 10 0 0 0 10 -10v-10a10 10 0 0 1 10 -10" /><path d="M40.0 31a10 10 0 0 1 10 10v40a10 10 0 0 0 10 10" /><g>
+<path d="M60.0 91h44.0" /><path d="M340.0 91h44.0" /><g class="non-terminal ">
+<path d="M104.0 91h0.0" /><path d="M183.5 91h0.0" /><rect height="22" width="79.5" x="104" y="80"></rect><text x="143.75" y="95">weekday</text></g><path d="M183.5 91h10" /><path d="M193.5 91h10" /><g class="terminal ">
+<path d="M203.5 91h0.0" /><path d="M240.5 91h0.0" /><rect height="22" rx="10" ry="10" width="37" x="203.5" y="80"></rect><text x="222" y="95">to</text></g><path d="M240.5 91h10" /><path d="M250.5 91h10" /><g class="non-terminal ">
+<path d="M260.5 91h0.0" /><path d="M340.0 91h0.0" /><rect height="22" width="79.5" x="260.5" y="80"></rect><text x="300.25" y="95">weekday</text></g></g><path d="M384.0 91a10 10 0 0 0 10 -10v-40a10 10 0 0 1 10 -10" /><path d="M40.0 31a10 10 0 0 1 10 10v70a10 10 0 0 0 10 10" /><g>
+<path d="M60.0 121h0.0" /><path d="M384.0 121h0.0" /><g class="terminal ">
+<path d="M60.0 121h0.0" /><path d="M216.0 121h0.0" /><rect height="22" rx="10" ry="10" width="156" x="60" y="110"></rect><text x="138" y="125">WeekdaySelector(</text></g><path d="M216.0 121h10" /><path d="M226.0 121h10" /><g>
+<path d="M236.0 121h0.0" /><path d="M335.5 121h0.0" /><path d="M236.0 121h10" /><g class="non-terminal ">
+<path d="M246.0 121h0.0" /><path d="M325.5 121h0.0" /><rect height="22" width="79.5" x="246" y="110"></rect><text x="285.75" y="125">weekday</text></g><path d="M325.5 121h10" /><path d="M246.0 121a10 10 0 0 0 -10 10v10a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M246.0 151h25.5" /><path d="M300.0 151h25.5" /><rect height="22" rx="10" ry="10" width="28.5" x="271.5" y="140"></rect><text x="285.75" y="155">,</text></g><path d="M325.5 151a10 10 0 0 0 10 -10v-10a10 10 0 0 0 -10 -10" /></g><path d="M335.5 121h10" /><path d="M345.5 121h10" /><g class="terminal ">
+<path d="M355.5 121h0.0" /><path d="M384.0 121h0.0" /><rect height="22" rx="10" ry="10" width="28.5" x="355.5" y="110"></rect><text x="369.75" y="125">)</text></g></g><path d="M384.0 121a10 10 0 0 0 10 -10v-70a10 10 0 0 1 10 -10" /></g><path d="M 404.0 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path></g></g><text x="8" y="1428" class="rr-label">weekday</text><g class="railroad-diagram" transform="translate(8,1438)">
+<g transform="translate(.5 .5)">
+<g>
+<path d="M20 21v20m10 -20v20m-10 -10h20" /></g><g>
+<path d="M40 31h0.0" /><path d="M125.5 31h0.0" /><path d="M40.0 31h20" /><g class="terminal ">
+<path d="M60.0 31h0.0" /><path d="M105.5 31h0.0" /><rect height="22" rx="10" ry="10" width="45.5" x="60" y="20"></rect><text x="82.75" y="35">Mon</text></g><path d="M105.5 31h20" /><path d="M40.0 31a10 10 0 0 1 10 10v10a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M60.0 61h0.0" /><path d="M105.5 61h0.0" /><rect height="22" rx="10" ry="10" width="45.5" x="60" y="50"></rect><text x="82.75" y="65">Tue</text></g><path d="M105.5 61a10 10 0 0 0 10 -10v-10a10 10 0 0 1 10 -10" /><path d="M40.0 31a10 10 0 0 1 10 10v40a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M60.0 91h0.0" /><path d="M105.5 91h0.0" /><rect height="22" rx="10" ry="10" width="45.5" x="60" y="80"></rect><text x="82.75" y="95">Wed</text></g><path d="M105.5 91a10 10 0 0 0 10 -10v-40a10 10 0 0 1 10 -10" /><path d="M40.0 31a10 10 0 0 1 10 10v70a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M60.0 121h0.0" /><path d="M105.5 121h0.0" /><rect height="22" rx="10" ry="10" width="45.5" x="60" y="110"></rect><text x="82.75" y="125">Thu</text></g><path d="M105.5 121a10 10 0 0 0 10 -10v-70a10 10 0 0 1 10 -10" /><path d="M40.0 31a10 10 0 0 1 10 10v100a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M60.0 151h0.0" /><path d="M105.5 151h0.0" /><rect height="22" rx="10" ry="10" width="45.5" x="60" y="140"></rect><text x="82.75" y="155">Fri</text></g><path d="M105.5 151a10 10 0 0 0 10 -10v-100a10 10 0 0 1 10 -10" /><path d="M40.0 31a10 10 0 0 1 10 10v130a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M60.0 181h0.0" /><path d="M105.5 181h0.0" /><rect height="22" rx="10" ry="10" width="45.5" x="60" y="170"></rect><text x="82.75" y="185">Sat</text></g><path d="M105.5 181a10 10 0 0 0 10 -10v-130a10 10 0 0 1 10 -10" /><path d="M40.0 31a10 10 0 0 1 10 10v160a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M60.0 211h0.0" /><path d="M105.5 211h0.0" /><rect height="22" rx="10" ry="10" width="45.5" x="60" y="200"></rect><text x="82.75" y="215">Sun</text></g><path d="M105.5 211a10 10 0 0 0 10 -10v-160a10 10 0 0 1 10 -10" /></g><path d="M 125.5 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path></g></g><text x="8" y="1714" class="rr-label">month</text><g class="railroad-diagram" transform="translate(8,1724)">
+<g transform="translate(.5 .5)">
+<g>
+<path d="M20 20v20m10 -20v20m-10 -10h20" /></g><path d="M40 30h10" /><g class="non-terminal ">
+<path d="M50 30h0.0" /><path d="M284.0 30h0.0" /><text class="comment" x="167" y="35">Month.January  …  Month.December</text></g><path d="M284 30h10" /><path d="M 294 30 h 20 m -10 -10 v 20 m 10 -20 v 20"></path></g></g><text x="8" y="1818" class="rr-label">monthDay</text><g class="railroad-diagram" transform="translate(8,1828)">
+<g transform="translate(.5 .5)">
+<g>
+<path d="M20 21v20m10 -20v20m-10 -10h20" /></g><path d="M40 31h10" /><g>
+<path d="M50 31h0.0" /><path d="M176.0 31h0.0" /><g class="non-terminal ">
+<path d="M50.0 31h0.0" /><path d="M102.0 31h0.0" /><text class="comment" x="76" y="36">1 … 31</text></g><path d="M102.0 31h10" /><path d="M112.0 31h10" /><g class="terminal ">
+<path d="M122.0 31h0.0" /><path d="M176.0 31h0.0" /><rect height="22" rx="10" ry="10" width="54" x="122" y="20"></rect><text x="149" y="35">.dom</text></g></g><path d="M176.0 31h10" /><path d="M 186.0 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path></g></g><text x="8" y="1924" class="rr-label">hour</text><g class="railroad-diagram" transform="translate(8,1934)">
+<g transform="translate(.5 .5)">
+<g>
+<path d="M20 21v20m10 -20v20m-10 -10h20" /></g><g>
+<path d="M40 31h0.0" /><path d="M189.0 31h0.0" /><path d="M40.0 31h20" /><g>
+<path d="M60.0 31h0.0" /><path d="M169.0 31h0.0" /><g class="non-terminal ">
+<path d="M60.0 31h0.0" /><path d="M112.0 31h0.0" /><text class="comment" x="86" y="36">0 … 23</text></g><path d="M112.0 31h10" /><path d="M122.0 31h10" /><g class="terminal ">
+<path d="M132.0 31h0.0" /><path d="M169.0 31h0.0" /><rect height="22" rx="10" ry="10" width="37" x="132" y="20"></rect><text x="150.5" y="35">.h</text></g></g><path d="M169.0 31h20" /><path d="M40.0 31a10 10 0 0 1 10 10v10a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M60.0 61h10.5" /><path d="M158.5 61h10.5" /><rect height="22" rx="10" ry="10" width="88" x="70.5" y="50"></rect><text x="114.5" y="65">midnight</text></g><path d="M169.0 61a10 10 0 0 0 10 -10v-10a10 10 0 0 1 10 -10" /><path d="M40.0 31a10 10 0 0 1 10 10v40a10 10 0 0 0 10 10" /><g class="terminal ">
+<path d="M60.0 91h27.5" /><path d="M141.5 91h27.5" /><rect height="22" rx="10" ry="10" width="54" x="87.5" y="80"></rect><text x="114.5" y="95">noon</text></g><path d="M169.0 91a10 10 0 0 0 10 -10v-40a10 10 0 0 1 10 -10" /></g><path d="M 189.0 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path></g></g><text x="8" y="2090" class="rr-label">minute</text><g class="railroad-diagram" transform="translate(8,2100)">
+<g transform="translate(.5 .5)">
+<g>
+<path d="M20 21v20m10 -20v20m-10 -10h20" /></g><path d="M40 31h10" /><g>
+<path d="M50 31h0.0" /><path d="M159.0 31h0.0" /><g class="non-terminal ">
+<path d="M50.0 31h0.0" /><path d="M102.0 31h0.0" /><text class="comment" x="76" y="36">0 … 59</text></g><path d="M102.0 31h10" /><path d="M112.0 31h10" /><g class="terminal ">
+<path d="M122.0 31h0.0" /><path d="M159.0 31h0.0" /><rect height="22" rx="10" ry="10" width="37" x="122" y="20"></rect><text x="140.5" y="35">.m</text></g></g><path d="M159.0 31h10" /><path d="M 169.0 31 h 20 m -10 -10 v 20 m 10 -20 v 20"></path></g></g></svg>
