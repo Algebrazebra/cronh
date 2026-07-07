@@ -7,7 +7,8 @@ import org.scalacheck.Prop.*
 class DayOfMonthTest extends ScalaCheckSuite {
 
   property("Only valid month-day values can be created") = forAll { (n: Int) =>
-    if (n < 1 || n > 31) intercept[IllegalArgumentException](DayOfMonth(n)): Unit
+    if (n < 1 || n > 31)
+      intercept[IllegalArgumentException](DayOfMonth(n)): Unit
     else DayOfMonth(n): Unit
   }
 

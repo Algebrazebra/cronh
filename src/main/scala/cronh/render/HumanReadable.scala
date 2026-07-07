@@ -61,8 +61,8 @@ private object HumanReadable {
     }
 
   private def dayPhrases(
-                          dayOfMonth: Field[DayOfMonth],
-                          dayOfWeek: Field[DayOfWeek]
+      dayOfMonth: Field[DayOfMonth],
+      dayOfWeek: Field[DayOfWeek]
   ): List[String] = {
     val monthDays = dayOfMonth.terms match {
       case Term.All :: Nil => None
