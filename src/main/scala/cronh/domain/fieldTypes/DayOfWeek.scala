@@ -1,4 +1,4 @@
-package cronh.domain
+package cronh.domain.fieldTypes
 
 /** A cron week day.
   *

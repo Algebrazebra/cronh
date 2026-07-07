@@ -1,5 +1,7 @@
 package cronh.domain
 
+import cronh.domain.fieldTypes.DomainBounds
+
 /** A cron field: a non-empty list of [[Term]]s.
   *
   * The non-empty invariant is enforced by the private constructor and the

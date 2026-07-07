@@ -1,6 +1,7 @@
 package cronh.domain
 
 import cronh.domain.Generators.given
+import cronh.domain.fieldTypes.{DayOfWeek, DomainBounds, Hour, Minute, Month}
 import munit.ScalaCheckSuite
 import org.scalacheck.Prop.*
 

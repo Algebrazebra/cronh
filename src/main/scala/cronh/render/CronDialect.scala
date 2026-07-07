@@ -1,9 +1,10 @@
 package cronh.render
 
 import cronh.domain.*
+import cronh.domain.fieldTypes.DayOfWeek
 
-/** A cron dialect: supplies the dialect-specific [[cronh.domain.DayOfWeek]]
-  * numbering and renders a full [[cronh.domain.CronExpression]].
+/** A cron dialect: supplies the dialect-specific [[DayOfWeek]] numbering and
+  * renders a full [[cronh.domain.CronExpression]].
   *
   * Everything that varies across cron flavors (weekday numbering, future `?` or
   * `L` tokens) belongs here rather than in the domain model (DESIGN.md §2.11,

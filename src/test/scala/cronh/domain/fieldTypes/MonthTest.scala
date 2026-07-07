@@ -1,5 +1,6 @@
-package cronh.domain
+package cronh.domain.fieldTypes
 
+import cronh.domain.fieldTypes.Month
 import munit.FunSuite
 
 class MonthTest extends FunSuite {

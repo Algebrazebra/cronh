@@ -1,48 +1,48 @@
 package cronh.dsl
 
-import cronh.domain.{DayOfWeek, Hour}
+import cronh.domain.fieldTypes.{DayOfWeek, Hour}
 
-/** Short alias for [[cronh.domain.DayOfWeek.Monday]]. */
+/** Short alias for [[DayOfWeek.Monday]]. */
 val Mon: DayOfWeek = DayOfWeek.Monday
 
-/** Short alias for [[cronh.domain.DayOfWeek.Tuesday]]. */
+/** Short alias for [[DayOfWeek.Tuesday]]. */
 val Tue: DayOfWeek = DayOfWeek.Tuesday
 
-/** Short alias for [[cronh.domain.DayOfWeek.Wednesday]]. */
+/** Short alias for [[DayOfWeek.Wednesday]]. */
 val Wed: DayOfWeek = DayOfWeek.Wednesday
 
-/** Short alias for [[cronh.domain.DayOfWeek.Thursday]]. */
+/** Short alias for [[DayOfWeek.Thursday]]. */
 val Thu: DayOfWeek = DayOfWeek.Thursday
 
-/** Short alias for [[cronh.domain.DayOfWeek.Friday]]. */
+/** Short alias for [[DayOfWeek.Friday]]. */
 val Fri: DayOfWeek = DayOfWeek.Friday
 
-/** Short alias for [[cronh.domain.DayOfWeek.Saturday]]. */
+/** Short alias for [[DayOfWeek.Saturday]]. */
 val Sat: DayOfWeek = DayOfWeek.Saturday
 
-/** Short alias for [[cronh.domain.DayOfWeek.Sunday]]. */
+/** Short alias for [[DayOfWeek.Sunday]]. */
 val Sun: DayOfWeek = DayOfWeek.Sunday
 
-/** Long alias for [[cronh.domain.DayOfWeek.Monday]], e.g. `Monday to Friday`.
+/** Long alias for [[DayOfWeek.Monday]], e.g. `Monday to Friday`.
   */
 val Monday: DayOfWeek = DayOfWeek.Monday
 
-/** Long alias for [[cronh.domain.DayOfWeek.Tuesday]]. */
+/** Long alias for [[DayOfWeek.Tuesday]]. */
 val Tuesday: DayOfWeek = DayOfWeek.Tuesday
 
-/** Long alias for [[cronh.domain.DayOfWeek.Wednesday]]. */
+/** Long alias for [[DayOfWeek.Wednesday]]. */
 val Wednesday: DayOfWeek = DayOfWeek.Wednesday
 
-/** Long alias for [[cronh.domain.DayOfWeek.Thursday]]. */
+/** Long alias for [[DayOfWeek.Thursday]]. */
 val Thursday: DayOfWeek = DayOfWeek.Thursday
 
-/** Long alias for [[cronh.domain.DayOfWeek.Friday]]. */
+/** Long alias for [[DayOfWeek.Friday]]. */
 val Friday: DayOfWeek = DayOfWeek.Friday
 
-/** Long alias for [[cronh.domain.DayOfWeek.Saturday]]. */
+/** Long alias for [[DayOfWeek.Saturday]]. */
 val Saturday: DayOfWeek = DayOfWeek.Saturday
 
-/** Long alias for [[cronh.domain.DayOfWeek.Sunday]]. */
+/** Long alias for [[DayOfWeek.Sunday]]. */
 val Sunday: DayOfWeek = DayOfWeek.Sunday
 
 /** Midnight (hour 0), e.g. `Schedule.daily.at(midnight)`. */

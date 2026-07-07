@@ -1,6 +1,7 @@
 package cronh.domain
 
 import cronh.domain.Generators.given
+import cronh.domain.fieldTypes.Minute
 import munit.ScalaCheckSuite
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen

@@ -1,11 +1,6 @@
-package cronh.domain
+package cronh.domain.fieldTypes
 
-/** A cron hour. Valid values are 0-23.
-  *
-  * A distinct value type: as a case class it has nominal identity, so a
-  * cross-unit comparison such as `Hour(5) == Minute(5)` is `false` rather than
-  * silently `true`.
-  */
+/** A cron hour. Valid values are 0-23. */
 final case class Hour private (value: Int) derives CanEqual
 
 object Hour {

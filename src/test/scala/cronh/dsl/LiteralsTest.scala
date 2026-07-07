@@ -1,6 +1,6 @@
 package cronh.dsl
 
-import cronh.domain.{Hour, Minute, MonthDay}
+import cronh.domain.fieldTypes.{Hour, Minute, DayOfMonth}
 import munit.FunSuite
 
 class LiteralsTest extends FunSuite {
@@ -10,8 +10,8 @@ class LiteralsTest extends FunSuite {
     assertEquals(0.m, Minute(0))
     assertEquals(59.m, Minute(59))
     assertEquals(23.h, Hour(23))
-    assertEquals(1.dom, MonthDay(1))
-    assertEquals(31.dom, MonthDay(31))
+    assertEquals(1.dom, DayOfMonth(1))
+    assertEquals(31.dom, DayOfMonth(31))
   }
 
   test("24.h is a compile error naming the valid range") {

@@ -1,25 +1,12 @@
 package cronh.domain
 
-/** A POSIX cron expression with five fields.
-  *
-  * The two phantom type parameters track DSL state and carry no runtime
-  * representation:
-  *
-  *   - `Time` records whether the time of day has been set ([[Status.Set]]) or
-  *     is still at its default ([[Status.Unset]]).
-  *   - `Day` records whether the schedule is constrained by weekday
-  *     ([[DaySpec.ByWeekday]]), by day of month ([[DaySpec.ByMonthDay]]), or
-  *     not at all ([[DaySpec.NoDay]]).
-  *
-  * Both parameters are covariant so that a directly constructed expression
-  * (whose phantoms infer to `Nothing`) conforms to every state and remains
-  * usable with the DSL. Equality ignores the phantoms: two expressions with the
-  * same five fields are equal.
-  */
-final case class CronExpression[+Time <: Status, +Day <: DaySpec](
+import cronh.domain.fieldTypes.{DayOfWeek, Hour, Minute, Month, DayOfMonth}
+
+/** A POSIX cron expression with five fields. */
+final case class CronExpression(
     minute: Field[Minute],
     hour: Field[Hour],
-    dayOfMonth: Field[MonthDay],
+    dayOfMonth: Field[DayOfMonth],
     month: Field[Month],
     dayOfWeek: Field[DayOfWeek]
 ) {

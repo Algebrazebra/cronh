@@ -1,12 +1,13 @@
 package cronh.render
 
 import cronh.domain.*
+import cronh.domain.fieldTypes.{DayOfWeek, Hour, Minute, Month, DayOfMonth}
 
 /** Typeclass rendering a domain value as its cron-string token.
   *
-  * Instances for the dialect-independent units ([[cronh.domain.Minute]],
-  * [[cronh.domain.Hour]], [[cronh.domain.MonthDay]], [[cronh.domain.Month]])
-  * live in the companion. There is deliberately no [[cronh.domain.DayOfWeek]]
+  * Instances for the dialect-independent units ([[Minute]],
+  * [[Hour]], [[DayOfMonth]], [[Month]])
+  * live in the companion. There is deliberately no [[DayOfWeek]]
   * instance here: weekday numbering varies by dialect (Unix counts Sunday as 0,
   * Quartz as 1), so that instance is provided by the [[CronDialect]] in use
   * (DESIGN.md §2.11).
@@ -21,7 +22,7 @@ object Render {
 
   given Render[Minute] = _.value.toString
   given Render[Hour] = _.value.toString
-  given Render[MonthDay] = _.value.toString
+  given Render[DayOfMonth] = _.value.toString
   given Render[Month] = _.value.toString
 }
 

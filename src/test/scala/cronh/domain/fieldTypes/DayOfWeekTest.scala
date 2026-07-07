@@ -1,5 +1,6 @@
-package cronh.domain
+package cronh.domain.fieldTypes
 
+import cronh.domain.fieldTypes.DayOfWeek
 import munit.FunSuite
 
 class DayOfWeekTest extends FunSuite {

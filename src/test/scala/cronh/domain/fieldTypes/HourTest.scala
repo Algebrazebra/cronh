@@ -1,5 +1,6 @@
-package cronh.domain
+package cronh.domain.fieldTypes
 
+import cronh.domain.fieldTypes.Hour
 import munit.ScalaCheckSuite
 import org.scalacheck.Prop.*
 
