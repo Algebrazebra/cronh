@@ -8,10 +8,10 @@ extension (expression: CronExpression) {
   /** An English description of the schedule, e.g. `"At 2:30 PM, every day"` or
     * `"At 9:00 AM, on weekdays"`.
     *
-    * Times are formatted as 12-hour clock with AM/PM. Recognizes the common
-    * idioms `Monday-Friday` ("on weekdays") and `Saturday,Sunday` ("on
+    * Times are formatted as a 12-hour clock with AM/PM. Recognizes the common
+    * idioms `Monday-Friday` ("on weekdays") and `Saturday, Sunday` ("on
     * weekends"); anything else falls back to a literal field description. When
-    * both day fields are constrained they are joined with "or", reflecting
+    * both day fields are constrained, they are joined with "or", reflecting
     * Vixie OR semantics (DESIGN.md §4.5).
     */
   def humanReadable: String = HumanReadable.describe(expression)
