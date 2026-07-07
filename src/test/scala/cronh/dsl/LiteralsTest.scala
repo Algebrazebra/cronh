@@ -18,8 +18,8 @@ class LiteralsTest extends FunSuite {
     assert(compileErrors("24.h").contains("Hour must be between 0 and 23"))
   }
 
-  test("60.m is a compile error naming the valid range") {
-    assert(compileErrors("60.m").contains("Minute must be between 0 and 59"))
+  test("60.min is a compile error naming the valid range") {
+    assert(compileErrors("60.min").contains("Minute must be between 0 and 59"))
   }
 
   test("0.dom and 32.dom are compile errors naming the valid range") {
@@ -32,7 +32,7 @@ class LiteralsTest extends FunSuite {
   }
 
   test("negative literals are compile errors") {
-    assert(compileErrors("-1.m").nonEmpty)
+    assert(compileErrors("-1.min").nonEmpty)
   }
 
   test("non-literal arguments fail with a friendly message") {
