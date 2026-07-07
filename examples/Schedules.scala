@@ -2,48 +2,55 @@
 //
 // Illustrative only — this directory is not compiled by the build, but every
 // expression below is mirrored by an acceptance test in src/test (see
-// cronh.dsl.ScheduleTest and cronh.render.HumanReadableTest), so the expected
-// strings stay honest.
+// cronh.dsl.ExamplesTest), so the expected strings stay honest.
 
-import cronh.domain.Month
+import cronh.domain.fieldTypes.Month
 import cronh.dsl.*
 import cronh.render.*
 
 object Schedules {
 
   // Nightly backup at half past two in the morning.
-  val nightlyBackup = Schedule.daily.at(2.h, 30.m)
+  val nightlyBackup = Schedule.daily.at(2.h, 30.min)
   // nightlyBackup.toCron == "30 2 * * *"
 
-  // Business-hours health check: every hour from 9 to 17, Monday to Friday.
-  val healthCheck = Schedule.weekdays.between(9.h, 17.h)
-  // healthCheck.toCron == "0 9-17 * * 1-5"
+  // Morning report on weekdays at 9 AM.
+  val morningReport = Schedule.weekdays.at(9.h, 0.min)
+  // morningReport.toCron == "0 9 * * 1-5"
 
   // Stand-up reminder on Monday and Friday at noon.
-  val standupReminder = Schedule.on(Mon, Fri).at(noon)
+  val standupReminder = Schedule.on(Mon, Fri).at(12.h, 0.min)
   // standupReminder.toCron == "0 12 * * 1,5"
 
-  // Mid-week deploy window, expressed as a natural range: Tue to Thu at 9 AM.
-  val deployWindow = Schedule.daily.on(Tue to Thu).at(9.h)
-  // deployWindow.toCron == "0 9 * * 2-4"
-
   // Payroll on the 1st and 15th at 6 AM.
-  val payroll = Schedule.onDay(1.dom, 15.dom).at(6.h)
+  val payroll = Schedule.onThe(1.dom, 15.dom).at(6.h, 0.min)
   // payroll.toCron == "0 6 1,15 * *"
 
   // Weekend batch job at 8 AM.
-  val weekendBatch = Schedule.weekends.at(8.h)
+  val weekendBatch = Schedule.weekends.at(8.h, 0.min)
   // weekendBatch.toCron == "0 8 * * 6,0"
 
-  // Quarterly-ish report: first of the month at midnight, summer months only.
-  val summerReport = Schedule.monthly.at(midnight).in(Month.June, Month.July)
-  // summerReport.toCron == "0 0 1 6,7 *"
+  // Summer newsletter: June and July, every day at 9 AM.
+  val summerNewsletter = Schedule.in(Month.June, Month.July).daily.at(9.h, 0.min)
+  // summerNewsletter.toCron == "0 9 * 6,7 *"
+
+  // Mid-June deadline reminder: June 15th at 9 AM.
+  val deadlineReminder = Schedule.in(Month.June).onThe(15.dom).at(9.h, 0.min)
+  // deadlineReminder.toCron == "0 9 15 6 *"
+
+  // Cleanup on the 1st of the month OR any Friday, at 4:30 AM.
+  // Classic cron ORs the two day fields; cronh makes you spell the "or".
+  val cleanup = Schedule.onThe(1.dom).orOn(Fri).at(4.h, 30.min)
+  // cleanup.toCron == "30 4 1 * 5"
 
   // Human-readable rendering for logs and UIs:
-  // standupReminder.humanReadable == "At 12:00 PM, on Monday and Friday"
+  // morningReport.humanReadable == "At 9:00 AM, on weekdays"
+  // cleanup.humanReadable == "At 4:30 AM, on day 1 of the month or on Friday"
 
-  // These do not compile — the phantom types reject them:
-  // Schedule.daily.at(9.h).at(14.h)   // time set twice
-  // Schedule.on(Mon).onDay(1.dom)     // day-of-week vs day-of-month conflict
-  // 25.h                              // Hour must be between 0 and 23
+  // These do not compile — the phase types reject them:
+  // Schedule.at(9.h, 0.min)                       // pick a recurrence first
+  // Schedule.daily.at(9.h, 0.min).at(14.h, 0.min) // time already set
+  // Schedule.on(Mon).onThe(1.dom)                 // spell the OR: .orThe(1.dom)
+  // Schedule.daily.in(Month.June)                 // months come first
+  // 25.h                                          // Hour must be between 0 and 23
 }
