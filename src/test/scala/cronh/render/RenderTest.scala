@@ -2,6 +2,7 @@ package cronh.render
 
 import cronh.domain.*
 import cronh.domain.Generators.given
+import cronh.domain.fieldTypes.{DayOfWeek, Hour, Minute, Month, DayOfMonth}
 import munit.ScalaCheckSuite
 import org.scalacheck.Prop.*
 
@@ -22,7 +23,7 @@ class RenderTest extends ScalaCheckSuite {
     val expression = CronExpression(
       Field.of(Minute(0), Minute(30)),
       Field.range(Hour(9), Hour(17)),
-      Field.of(MonthDay(1), MonthDay(15)),
+      Field.of(DayOfMonth(1), DayOfMonth(15)),
       Field.single(Month.June),
       Field.of(DayOfWeek.Sunday, DayOfWeek.Saturday)
     )

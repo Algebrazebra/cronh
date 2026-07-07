@@ -1,17 +1,12 @@
-package cronh.domain
+package cronh.domain.fieldTypes
 
-/** A cron minute. Valid values are 0-59.
-  *
-  * A distinct value type: as a case class it has nominal identity, so a
-  * cross-unit comparison such as `Minute(5) == Hour(5)` is `false` rather than
-  * silently `true`.
-  */
+/** A cron minute. Valid values are 0-59. */
 final case class Minute private (value: Int) derives CanEqual
 
 object Minute {
 
   /** Smallest valid minute. `inline` so it is a compile-time constant usable
-    * from the `30.m` literal checks, keeping a single source of truth for the
+    * from the `30.min` literal checks, keeping a single source of truth for the
     * bounds.
     */
   inline val MinValue = 0

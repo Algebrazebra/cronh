@@ -1,6 +1,6 @@
 package cronh.render
 
-import cronh.domain.Month
+import cronh.domain.fieldTypes.{DayOfWeek, Hour, Minute, Month, DayOfMonth}
 import cronh.dsl.*
 import munit.FunSuite
 
@@ -80,7 +80,7 @@ class HumanReadableTest extends FunSuite {
     val expression = CronExpression(
       Field.single(Minute(0)),
       Field.single(Hour(9)),
-      Field.single(MonthDay(1)),
+      Field.single(DayOfMonth(1)),
       Field.all,
       Field.single(DayOfWeek.Monday)
     )
@@ -110,7 +110,7 @@ class HumanReadableTest extends FunSuite {
     val expression = CronExpression(
       Field.single(Minute(0)),
       Field.single(Hour(9)),
-      Field.from(Term.All, Term.Single(MonthDay(1))),
+      Field.from(Term.All, Term.Single(DayOfMonth(1))),
       Field.all,
       Field.all
     )

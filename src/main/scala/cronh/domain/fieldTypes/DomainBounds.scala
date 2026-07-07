@@ -1,6 +1,6 @@
-package cronh.domain
+package cronh.domain.fieldTypes
 
-/** Typeclass enumerating the complete, ascending domain of a cron unit.
+/** Typeclass listing the complete, ascending domain of a cron unit.
   *
   * Used by [[Field.normalized]] to merge overlapping or adjacent terms and to
   * detect tautological full spans (e.g. `0-59` in the minute field, which

@@ -1,4 +1,4 @@
-package cronh.domain
+package cronh.domain.fieldTypes
 
 /** A cron month. */
 enum Month private (val value: Int) {

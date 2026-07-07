@@ -1,5 +1,6 @@
 package cronh.dsl
 
+import cronh.domain.fieldTypes.Month
 import munit.FunSuite
 
 class PhantomTest extends FunSuite {
@@ -43,8 +44,8 @@ class PhantomTest extends FunSuite {
   test("valid chains compile and run") {
     val a = Schedule.daily.at(9.h)
     val b = Schedule.daily.on(Mon).at(noon)
-    val c = Schedule.weekdays.between(9.h, 17.h).at(30.m)
-    val d = Schedule.monthly.at(6.h).in(cronh.domain.Month.March)
+    val c = Schedule.weekdays.between(9.h, 17.h).at(30.min)
+    val d = Schedule.monthly.at(6.h).in(Month.March)
     assert(a != b && c != d)
   }
 }

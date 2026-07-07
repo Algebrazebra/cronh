@@ -1,6 +1,7 @@
 package cronh.dsl
 
-import cronh.domain.{DayOfWeek, Field}
+import cronh.domain.Field
+import cronh.domain.fieldTypes.DayOfWeek
 
 /** A non-empty selection of weekdays for use with `.on`.
   *

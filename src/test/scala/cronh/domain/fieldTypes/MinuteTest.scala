@@ -1,5 +1,6 @@
-package cronh.domain
+package cronh.domain.fieldTypes
 
+import cronh.domain.fieldTypes.{DayOfMonth, Hour, Minute}
 import munit.ScalaCheckSuite
 import org.scalacheck.Prop.*
 
@@ -22,7 +23,7 @@ class MinuteTest extends ScalaCheckSuite {
     // As nominal case classes, units no longer share Int's universal equality,
     // so a same-numeric cross-unit comparison is false rather than true.
     assert(!Minute(5).equals(Hour(5)))
-    assert(!Minute(5).equals(MonthDay(5)))
+    assert(!Minute(5).equals(DayOfMonth(5)))
     assert(Minute(5) == Minute(5))
   }
 

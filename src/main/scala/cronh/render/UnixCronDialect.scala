@@ -1,6 +1,7 @@
 package cronh.render
 
-import cronh.domain.{DayOfWeek, Field, Term}
+import cronh.domain.fieldTypes.DayOfWeek
+import cronh.domain.{Field, Term}
 
 /** The classic Unix/Vixie dialect: Sunday = 0, Monday = 1, ..., Saturday = 6.
   */

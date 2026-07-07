@@ -1,6 +1,7 @@
 package cronh.render
 
 import cronh.domain.*
+import cronh.domain.fieldTypes.{DayOfWeek, Hour, Minute, Month, DayOfMonth}
 
 extension (expression: CronExpression[?, ?]) {
 
@@ -60,8 +61,8 @@ private object HumanReadable {
     }
 
   private def dayPhrases(
-      dayOfMonth: Field[MonthDay],
-      dayOfWeek: Field[DayOfWeek]
+                          dayOfMonth: Field[DayOfMonth],
+                          dayOfWeek: Field[DayOfWeek]
   ): List[String] = {
     val monthDays = dayOfMonth.terms match {
       case Term.All :: Nil => None

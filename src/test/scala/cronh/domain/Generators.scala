@@ -1,5 +1,6 @@
 package cronh.domain
 
+import cronh.domain.fieldTypes.{DayOfWeek, Hour, Minute, Month, DayOfMonth}
 import org.scalacheck.{Arbitrary, Gen}
 
 /** Shared ScalaCheck generators for every domain type.
@@ -15,7 +16,7 @@ object Generators {
 
   given Arbitrary[Hour] = Arbitrary(Gen.choose(0, 23).map(Hour(_)))
 
-  given Arbitrary[MonthDay] = Arbitrary(Gen.choose(1, 31).map(MonthDay(_)))
+  given Arbitrary[DayOfMonth] = Arbitrary(Gen.choose(1, 31).map(DayOfMonth(_)))
 
   given Arbitrary[Month] = Arbitrary(Gen.oneOf(Month.values.toSeq))
 
@@ -60,7 +61,7 @@ object Generators {
     for {
       m <- summon[Arbitrary[Field[Minute]]].arbitrary
       h <- summon[Arbitrary[Field[Hour]]].arbitrary
-      d <- summon[Arbitrary[Field[MonthDay]]].arbitrary
+      d <- summon[Arbitrary[Field[DayOfMonth]]].arbitrary
       mo <- summon[Arbitrary[Field[Month]]].arbitrary
       dow <- summon[Arbitrary[Field[DayOfWeek]]].arbitrary
     } yield CronExpression(m, h, d, mo, dow)
