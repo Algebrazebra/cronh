@@ -7,8 +7,8 @@ class LiteralsTest extends FunSuite {
 
   test("valid literals construct domain values") {
     assertEquals(9.h, Hour(9))
-    assertEquals(0.m, Minute(0))
-    assertEquals(59.m, Minute(59))
+    assertEquals(0.min, Minute(0))
+    assertEquals(59.min, Minute(59))
     assertEquals(23.h, Hour(23))
     assertEquals(1.dom, DayOfMonth(1))
     assertEquals(31.dom, DayOfMonth(31))

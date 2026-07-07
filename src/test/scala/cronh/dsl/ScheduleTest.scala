@@ -7,7 +7,7 @@ import munit.FunSuite
 class ScheduleTest extends FunSuite {
 
   test("Schedule.daily.at(14.h, 30.m) renders 30 14 * * *") {
-    assertEquals(Schedule.daily.at(14.h, 30.m).toCron, "30 14 * * *")
+    assertEquals(Schedule.daily.at(14.h, 30.min).toCron, "30 14 * * *")
   }
 
   test("Schedule.weekdays.at(9.h) renders 0 9 * * 1-5") {
@@ -27,7 +27,7 @@ class ScheduleTest extends FunSuite {
 
   test("between keeps the minute settable: .at(30.m) refines it") {
     assertEquals(
-      Schedule.weekdays.between(9.h, 17.h).at(30.m).toCron,
+      Schedule.weekdays.between(9.h, 17.h).at(30.min).toCron,
       "30 9-17 * * 1-5"
     )
   }
