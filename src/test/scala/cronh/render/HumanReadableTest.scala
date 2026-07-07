@@ -8,7 +8,7 @@ class HumanReadableTest extends FunSuite {
 
   test("daily at an afternoon time") {
     assertEquals(
-      Schedule.daily.at(14.h, 30.m).humanReadable,
+      Schedule.daily.at(14.h, 30.min).humanReadable,
       "At 2:30 PM, every day"
     )
   }

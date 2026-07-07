@@ -17,7 +17,7 @@ extension (inline value: Int) {
     * reports a tailored message pointing at [[Minute.apply]] for runtime
     * values.
     */
-  inline def m: Minute = ${ LiteralMacros.mImpl('value) }
+  inline def min: Minute = ${ LiteralMacros.mImpl('value) }
 
   /** This day of the month, validated at compile time: `15.dom` compiles,
     * `32.dom` is a compiler error. Requires an integer literal; a non-literal
