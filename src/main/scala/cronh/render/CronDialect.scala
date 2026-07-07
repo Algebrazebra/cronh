@@ -23,7 +23,7 @@ trait CronDialect {
     renderField(field)
 
   /** Renders the five fields, space-separated, in cron order. */
-  final def render(expression: CronExpression[?, ?]): String =
+  final def render(expression: CronExpression): String =
     List(
       renderField(expression.minute),
       renderField(expression.hour),
@@ -42,7 +42,7 @@ object CronDialect {
   given default: CronDialect = UnixCronDialect
 }
 
-extension (expression: CronExpression[?, ?]) {
+extension (expression: CronExpression) {
 
   /** Renders this expression as a cron string under the given dialect (defaults
     * to [[UnixCronDialect]]).

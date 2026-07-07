@@ -3,7 +3,7 @@ package cronh.render
 import cronh.domain.*
 import cronh.domain.fieldTypes.{DayOfWeek, Hour, Minute, Month, DayOfMonth}
 
-extension (expression: CronExpression[?, ?]) {
+extension (expression: CronExpression) {
 
   /** An English description of the schedule, e.g. `"At 2:30 PM, every day"` or
     * `"At 9:00 AM, on weekdays"`.
@@ -19,7 +19,7 @@ extension (expression: CronExpression[?, ?]) {
 
 private object HumanReadable {
 
-  def describe(expression: CronExpression[?, ?]): String = {
+  def describe(expression: CronExpression): String = {
     val phrases =
       timePhrase(
         collapseAll(expression.minute),

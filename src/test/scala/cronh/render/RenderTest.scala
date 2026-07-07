@@ -81,12 +81,12 @@ class RenderTest extends ScalaCheckSuite {
     assertEquals(renderField[Minute](Field.all), "*")
   }
 
-  property("rendering is deterministic") = forAll { (e: FreshCron) =>
+  property("rendering is deterministic") = forAll { (e: CronExpression) =>
     e.toCron == e.toCron
   }
 
   property("output always has exactly five space-separated fields") = forAll {
-    (e: FreshCron) =>
+    (e: CronExpression) =>
       e.toCron.split(" ").length == 5
   }
 
