@@ -51,10 +51,8 @@ val midnight: Hour = Hour(0)
 /** Noon (hour 12), e.g. `Schedule.on(Mon, Fri).at(noon)`. */
 val noon: Hour = Hour(12)
 
-/** Monday through Friday, e.g. `Schedule.daily.on(Weekdays)`. */
-val Weekdays: WeekdaySelector =
-  WeekdaySelector.range(DayOfWeek.Monday, DayOfWeek.Friday)
+/** Monday through Friday, e.g., `Schedule.daily.on(Weekdays)`. */
+val Weekdays: DayOfWeekRange = Range[DayOfWeek](from = Monday, to = Friday)
 
-/** Saturday and Sunday, e.g. `Schedule.daily.on(Weekends)`. */
-val Weekends: WeekdaySelector =
-  WeekdaySelector(DayOfWeek.Saturday, DayOfWeek.Sunday)
+/** Saturday and Sunday, e.g., `Schedule.daily.on(Weekends)`. */
+val Weekends: DayOfWeekRange = Range[DayOfWeek](from = Saturday, to = Sunday)
