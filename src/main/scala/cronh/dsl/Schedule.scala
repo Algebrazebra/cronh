@@ -1,7 +1,7 @@
 package cronh.dsl
 
+import cronh.domain.fieldTypes.*
 import cronh.domain.{CronExpression, Field}
-import cronh.domain.fieldTypes.{DayOfMonth, DayOfWeek, Hour, Minute, Month}
 
 /** # Entry point for the scheduling DSL.
   *
@@ -50,6 +50,12 @@ trait MonthSelection {
     cronExpr.copy(month = Some(Field.of(m, ms: _*)))
   )
 
+  def in(ms: MonthRange): MonthChosen = {
+    MonthChosen(
+      cronExpr.copy(month = Some(ms.toField))
+    )
+  }
+
 }
 
 /** This trait carries the day-selection methods. */
@@ -82,17 +88,30 @@ trait DaySelection {
     cronExpr.copy(dayOfWeek = Some(Field.of(w, ws: _*)))
   )
 
+  def on(ws: DayOfWeekRange): DayOfWeekChosen = DayOfWeekChosen(
+    cronExpr.copy(dayOfWeek = Some(ws.toField))
+  )
+
   /** Configures scheduling for one or many days of the month. */
   def onThe(d: DayOfMonth, ds: DayOfMonth*): DayOfMonthChosen =
     DayOfMonthChosen(
       cronExpr.copy(dayOfMonth = Some(Field.of(d, ds: _*)))
     )
+
+  def onThe(ds: DayOfMonthRange): DayOfMonthChosen =
+    DayOfMonthChosen(
+      cronExpr.copy(dayOfMonth = Some(ds.toField))
+    )
 }
 
 final class DayOfWeekChosen(cronExpr: CronExpressionBuilder)
     extends TimePhase(cronExpr) {
-  def orThe(d: DayOfMonth, ds: DayOfMonth*): TimePhase = TimePhase(
+  def orOnThe(d: DayOfMonth, ds: DayOfMonth*): TimePhase = TimePhase(
     cronExpr.copy(dayOfMonth = Some(Field.of(d, ds: _*)))
+  )
+
+  def orOnThe(ds: DayOfMonthRange): TimePhase = TimePhase(
+    cronExpr.copy(dayOfMonth = Some(ds.toField))
   )
 }
 
@@ -100,6 +119,9 @@ final class DayOfMonthChosen(cronExpr: CronExpressionBuilder)
     extends TimePhase(cronExpr) {
   def orOn(w: DayOfWeek, ws: DayOfWeek*): TimePhase = TimePhase(
     cronExpr.copy(dayOfWeek = Some(Field.of(w, ws: _*)))
+  )
+  def orOn(ws: DayOfWeekRange): TimePhase = TimePhase(
+    cronExpr.copy(dayOfWeek = Some(ws.toField))
   )
 }
 
