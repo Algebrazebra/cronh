@@ -114,13 +114,13 @@ object Time {
     if (hour.value < minValue12hFormat)
       Left(
         InvalidHour(
-          s"Error parsing hour: Hour must be between $minValue12hFormat and $maxValue12hFormat, got $hour."
+          s"Error parsing hour: In the 12h format, hour must be between $minValue12hFormat and $maxValue12hFormat, got $hour."
         )
       )
     else if (hour.value > maxValue12hFormat) {
       Left(
         InvalidHour(
-          s"Error parsing hour: Hour must be between $minValue12hFormat and $maxValue12hFormat, got $hour."
+          s"Error parsing hour: In the 12h format, hour must be between $minValue12hFormat and $maxValue12hFormat, got $hour."
         )
       )
     } else Right(hour)
