@@ -17,6 +17,7 @@ final case class Time(hour: Hour, minute: Minute) {
 object Time {
 
   private val rgx_12hClock = """(\d{1,2}):(\d{2})\s*([APap][Mm])""".r
+  private val rgx_12hClockHoursOnly = """(\d{1,2})\s*([APap][Mm])""".r
   private val rgx_24hClock = """(\d{1,2}):(\d{2})""".r
 
   /** Parses a string into a `Time` value.
@@ -39,6 +40,13 @@ object Time {
         meridiem <- parseMeridiem(period)
         convertedHour <- convertTo24Hour(hour, meridiem)
       } yield Time(convertedHour, minute)
+    case rgx_12hClockHoursOnly(hourStr, period) =>
+      for {
+        hour <- parseHour(hourStr)
+        _ <- isValid12hFormatHour(hour)
+        meridiem <- parseMeridiem(period)
+        convertedHour <- convertTo24Hour(hour, meridiem)
+      } yield Time(convertedHour, Minute(0))
     case bullshit =>
       Left(
         InvalidTimeFormat(
