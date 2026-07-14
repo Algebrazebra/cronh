@@ -198,7 +198,7 @@ private[dsl] final case class CronExpressionBuilder(
     dayOfWeek: Option[Field[DayOfWeek]]
 ) {
 
-  /** Converts to a [[CronExpression]] by setting unset fields to *`. */
+  /** Converts to a [[CronExpression]] by setting unset fields to `*`. */
   def build(): CronExpression = CronExpression(
     minute.getOrElse(Field.all),
     hour.getOrElse(Field.all),
