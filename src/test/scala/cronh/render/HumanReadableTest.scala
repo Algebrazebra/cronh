@@ -66,7 +66,7 @@ class HumanReadableTest extends FunSuite {
 
   test("day-of-month and day-of-week together read as or (Vixie OR)") {
     assertEquals(
-      Schedule.onThe(1.dom).orOn(Monday).at(9.h, 0.min).humanReadable,
+      Schedule.onThe(1.dom).orOn(Mondays).at(9.h, 0.min).humanReadable,
       "At 9:00 AM, on day 1 of the month or on Monday"
     )
   }

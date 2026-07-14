@@ -26,25 +26,25 @@ val Sun: DayOfWeek = DayOfWeek.Sunday
 
 /** Long alias for [[DayOfWeek.Monday]], e.g. `Monday to Friday`.
   */
-val Monday: DayOfWeek = DayOfWeek.Monday
+val Mondays: DayOfWeek = DayOfWeek.Monday
 
 /** Long alias for [[DayOfWeek.Tuesday]]. */
-val Tuesday: DayOfWeek = DayOfWeek.Tuesday
+val Tuesdays: DayOfWeek = DayOfWeek.Tuesday
 
 /** Long alias for [[DayOfWeek.Wednesday]]. */
-val Wednesday: DayOfWeek = DayOfWeek.Wednesday
+val Wednesdays: DayOfWeek = DayOfWeek.Wednesday
 
 /** Long alias for [[DayOfWeek.Thursday]]. */
-val Thursday: DayOfWeek = DayOfWeek.Thursday
+val Thursdays: DayOfWeek = DayOfWeek.Thursday
 
 /** Long alias for [[DayOfWeek.Friday]]. */
-val Friday: DayOfWeek = DayOfWeek.Friday
+val Fridays: DayOfWeek = DayOfWeek.Friday
 
 /** Long alias for [[DayOfWeek.Saturday]]. */
-val Saturday: DayOfWeek = DayOfWeek.Saturday
+val Saturdays: DayOfWeek = DayOfWeek.Saturday
 
 /** Long alias for [[DayOfWeek.Sunday]]. */
-val Sunday: DayOfWeek = DayOfWeek.Sunday
+val Sundays: DayOfWeek = DayOfWeek.Sunday
 
 /** Alias for midnight, i.e., 00:00. */
 val Midnight: Time = time"00:00"
@@ -53,7 +53,7 @@ val Midnight: Time = time"00:00"
 val Noon: Time = time"12:00"
 
 /** Monday through Friday, e.g., `Schedule.daily.on(Weekdays)`. */
-val Weekdays: DayOfWeekRange = Range[DayOfWeek](from = Monday, to = Friday)
+val Weekdays: DayOfWeekRange = Range[DayOfWeek](from = Mondays, to = Fridays)
 
 /** Saturday and Sunday, e.g., `Schedule.daily.on(Weekends)`. */
-val Weekends: DayOfWeekRange = Range[DayOfWeek](from = Saturday, to = Sunday)
+val Weekends: DayOfWeekRange = Range[DayOfWeek](from = Saturdays, to = Sundays)

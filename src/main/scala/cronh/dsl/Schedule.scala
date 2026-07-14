@@ -80,7 +80,7 @@ trait DaySelection {
 
   /** Configures scheduling for weekends, i.e., Saturday and Sunday. */
   def weekends: DayOfWeekChosen = DayOfWeekChosen(
-    cronExpr.copy(dayOfWeek = Some(Field.of(Saturday, Sunday)))
+    cronExpr.copy(dayOfWeek = Some(Field.of(Saturdays, Sundays)))
   )
 
   /** Configures scheduling for one or many days of the week. */
