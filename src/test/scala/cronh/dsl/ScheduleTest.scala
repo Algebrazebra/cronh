@@ -14,7 +14,7 @@ class ScheduleTest extends FunSuite {
   }
 
   test("Schedule.on(Mon, Fri).at(noon) renders 0 12 * * 1,5") {
-    assertEquals(Schedule.on(Mon, Fri).at(noon).toCron, "0 12 * * 1,5")
+    assertEquals(Schedule.on(Mon, Fri).at(Noon).toCron, "0 12 * * 1,5")
   }
 
   /*

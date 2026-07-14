@@ -41,16 +41,16 @@ Then using it is quite straightforward:
 ```scala 3
 import cronh.dsl.*
 
-Schedule.daily.at(14.h, 30.m).toCron         // "30 14 * * *"
-Schedule.weekdays.at(9.h).toCron             // "0 9 * * 1-5"
-Schedule.on(Mon, Fri).at(noon).toCron        // "0 12 * * 1,5"
+Schedule.daily.at(14.h, 30.m).toCron // "30 14 * * *"
+Schedule.weekdays.at(9.h).toCron // "0 9 * * 1-5"
+Schedule.on(Mon, Fri).at(Noon).toCron // "0 12 * * 1,5"
 Schedule.daily.on(Mon to Fri).at(9.h).toCron // "0 9 * * 1-5"
-Schedule.weekdays.between(9.h, 17.h).toCron  // "0 9-17 * * 1-5"
+Schedule.weekdays.between(9.h, 17.h).toCron // "0 9-17 * * 1-5"
 
 
 import cronh.render.*
 
-Schedule.weekdays.at(9.h).humanReadable     // "At 9:00 AM, on weekdays"
+Schedule.weekdays.at(9.h).humanReadable // "At 9:00 AM, on weekdays"
 ```
 
 usage examples (insert codeblock)

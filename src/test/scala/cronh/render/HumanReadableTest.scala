@@ -22,7 +22,7 @@ class HumanReadableTest extends FunSuite {
 
   test("named days join with and") {
     assertEquals(
-      Schedule.on(Mon, Fri).at(noon).humanReadable,
+      Schedule.on(Mon, Fri).at(Noon).humanReadable,
       "At 12:00 PM, on Monday and Friday"
     )
   }

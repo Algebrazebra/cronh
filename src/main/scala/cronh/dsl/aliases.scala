@@ -1,6 +1,7 @@
 package cronh.dsl
 
-import cronh.domain.fieldTypes.{DayOfWeek, Hour}
+import cronh.domain.fieldTypes.DayOfWeek
+import cronh.dsl.Time.TimeStringContext
 
 /** Short alias for [[DayOfWeek.Monday]]. */
 val Mon: DayOfWeek = DayOfWeek.Monday
@@ -45,11 +46,11 @@ val Saturday: DayOfWeek = DayOfWeek.Saturday
 /** Long alias for [[DayOfWeek.Sunday]]. */
 val Sunday: DayOfWeek = DayOfWeek.Sunday
 
-/** Midnight (hour 0), e.g. `Schedule.daily.at(midnight)`. */
-val midnight: Hour = Hour(0)
+/** Alias for midnight, i.e., 00:00. */
+val Midnight: Time = time"00:00"
 
-/** Noon (hour 12), e.g. `Schedule.on(Mon, Fri).at(noon)`. */
-val noon: Hour = Hour(12)
+/** Alias for noon, i.e., 12:00. */
+val Noon: Time = time"12:00"
 
 /** Monday through Friday, e.g., `Schedule.daily.on(Weekdays)`. */
 val Weekdays: DayOfWeekRange = Range[DayOfWeek](from = Monday, to = Friday)
