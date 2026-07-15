@@ -92,11 +92,6 @@ private object LiteralMacros {
       '{ Minute(${ Expr(v) }) }
     )
 
-  def domImpl(expr: Expr[Int])(using Quotes): Expr[DayOfMonth] =
-    checked(expr, DayOfMonth.MinValue, DayOfMonth.MaxValue, "MonthDay", "dom")(
-      v => '{ DayOfMonth(${ Expr(v) }) }
-    )
-
   /** Backs `.st`/`.nd`/`.rd`/`.th`: range-checks and additionally verifies that
     * `suffix` is the grammatically correct English ordinal suffix for the
     * literal value (so `1.th` and `15.rd` fail to compile, distinctly from an
