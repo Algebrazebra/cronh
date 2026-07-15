@@ -5,6 +5,16 @@ import munit.FunSuite
 
 class ScheduleTest extends FunSuite {
 
+  // Test month selection works: single month, many months
+
+  // Test month range: inclusive and convering. is field.range
+  // --> Test wraparound ranges
+
+  // Test Day ranges: one, many, day range -->  what happens with a wraparound?
+  // TODO: Document: from 15th june to 15th of august is NOT possible in cron
+  // Test Day selection: when setting the 15th, it's possible to select a weekday after
+  // Test Day selection can be skipped
+
   test("Schedule.daily.at(14.h, 30.m) renders 30 14 * * *") {
     assertEquals(Schedule.daily.at(14.h, 30.min).toCron, "30 14 * * *")
   }
@@ -38,7 +48,7 @@ class ScheduleTest extends FunSuite {
   }
 
   test("Schedule.onThe(1.dom, 15.dom).at(6.h) renders 0 6 1,15 * *") {
-    assertEquals(Schedule.onThe(1.dom, 15.dom).at(6.h).toCron, "0 6 1,15 * *")
+    assertEquals(Schedule.onThe(1.st, 15.th).at(6.h).toCron, "0 6 1,15 * *")
   }
 
   /*
