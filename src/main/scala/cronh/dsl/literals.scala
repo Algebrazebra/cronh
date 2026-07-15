@@ -1,6 +1,6 @@
 package cronh.dsl
 
-import cronh.domain.fieldTypes.{Hour, Minute, DayOfMonth}
+import cronh.domain.fieldTypes.{DayOfMonth, Hour, Minute}
 
 import scala.quoted.*
 
@@ -19,12 +19,57 @@ extension (inline value: Int) {
     */
   inline def min: Minute = ${ LiteralMacros.mImpl('value) }
 
-  /** This day of the month, validated at compile time: `15.dom` compiles,
-    * `32.dom` is a compiler error. Requires an integer literal; a non-literal
-    * reports a tailored message pointing at [[DayOfMonth.apply]] for runtime
-    * values.
+  /** This day of the month, validated at compile time.
+    *
+    * Valid days of the month with the correct ordinals compile: `1.st`, `2.nd`,
+    * `3.rd`, `4.th`, etc.
+    *
+    * Invalid days of the month or incorrect ordinals are a compiler error:
+    * `32.th`, `1.th`, `4.st`, etc.
+    *
+    * Requires an integer literal; a non-literal reports a tailored message
+    * pointing at [[DayOfMonth.apply]] for runtime values.
     */
-  inline def dom: DayOfMonth = ${ LiteralMacros.domImpl('value) }
+  inline def st: DayOfMonth = ${ LiteralMacros.ordinalImpl('value, "st") }
+
+  /** This day of the month, validated at compile time.
+    *
+    * Valid days of the month with the correct ordinals compile: `1.st`, `2.nd`,
+    * `3.rd`, `4.th`, etc.
+    *
+    * Invalid days of the month or incorrect ordinals are a compiler error:
+    * `32.th`, `1.th`, `4.st`, etc.
+    *
+    * Requires an integer literal; a non-literal reports a tailored message
+    * pointing at [[DayOfMonth.apply]] for runtime values.
+    */
+  inline def nd: DayOfMonth = ${ LiteralMacros.ordinalImpl('value, "nd") }
+
+  /** This day of the month, validated at compile time.
+    *
+    * Valid days of the month with the correct ordinals compile: `1.st`, `2.nd`,
+    * `3.rd`, `4.th`, etc.
+    *
+    * Invalid days of the month or incorrect ordinals are a compiler error:
+    * `32.th`, `1.th`, `4.st`, etc.
+    *
+    * Requires an integer literal; a non-literal reports a tailored message
+    * pointing at [[DayOfMonth.apply]] for runtime values.
+    */
+  inline def rd: DayOfMonth = ${ LiteralMacros.ordinalImpl('value, "rd") }
+
+  /** This day of the month, validated at compile time.
+    *
+    * Valid days of the month with the correct ordinals compile: `1.st`, `2.nd`,
+    * `3.rd`, `4.th`, etc.
+    *
+    * Invalid days of the month or incorrect ordinals are a compiler error:
+    * `32.th`, `1.th`, `4.st`, etc.
+    *
+    * Requires an integer literal; a non-literal reports a tailored message
+    * pointing at [[DayOfMonth.apply]] for runtime values.
+    */
+  inline def th: DayOfMonth = ${ LiteralMacros.ordinalImpl('value, "th") }
 }
 
 /** Macro implementations backing the compile-time literal extensions.
@@ -47,10 +92,46 @@ private object LiteralMacros {
       '{ Minute(${ Expr(v) }) }
     )
 
-  def domImpl(expr: Expr[Int])(using Quotes): Expr[DayOfMonth] =
-    checked(expr, DayOfMonth.MinValue, DayOfMonth.MaxValue, "MonthDay", "dom")(
-      v => '{ DayOfMonth(${ Expr(v) }) }
-    )
+  /** Backs `.st`/`.nd`/`.rd`/`.th`: range-checks and additionally verifies that
+    * `suffix` is the grammatically correct English ordinal suffix for the
+    * literal value (so `1.th` and `15.rd` fail to compile, distinctly from an
+    * out-of-range value).
+    */
+  def ordinalImpl(expr: Expr[Int], suffix: String)(using
+      Quotes
+  ): Expr[DayOfMonth] = {
+    import quotes.reflect.report
+    checked(
+      expr,
+      DayOfMonth.MinValue,
+      DayOfMonth.MaxValue,
+      "DayOfMonth",
+      suffix
+    ) { v =>
+      {
+        val expected = englishOrdinalSuffix(v)
+        if (suffix != expected) {
+          report.errorAndAbort(
+            s"""$v takes the ordinal suffix $expected, not '$suffix'
+               |Hint: Write $v.$expected instead!""".stripMargin
+          )
+        } else {
+          '{ DayOfMonth(${ Expr(v) }) }
+        }
+      }
+    }
+  }
+
+  /** Gets the grammatically correct English ordinal suffix for the value v. */
+  private def englishOrdinalSuffix(v: Int): String =
+    if v % 100 >= 11 && v % 100 <= 13 then "th"
+    else
+      v % 10 match {
+        case 1 => "st"
+        case 2 => "nd"
+        case 3 => "rd"
+        case _ => "th"
+      }
 
   private def checked[A](
       expr: Expr[Int],
