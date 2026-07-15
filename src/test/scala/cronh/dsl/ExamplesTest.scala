@@ -28,7 +28,7 @@ class ExamplesTest extends FunSuite {
 
   test("payroll on the 1st and 15th at 6 AM") {
     assertEquals(
-      Schedule.onThe(1.dom, 15.dom).at(6.h, 0.min).toCron,
+      Schedule.onThe(1.st, 15.th).at(6.h, 0.min).toCron,
       "0 6 1,15 * *"
     )
   }
@@ -46,18 +46,18 @@ class ExamplesTest extends FunSuite {
 
   test("deadline reminder on June 15th at 9 AM") {
     assertEquals(
-      Schedule.in(Month.June).onThe(15.dom).at(9.h, 0.min).toCron,
+      Schedule.in(Month.June).onThe(15.th).at(9.h, 0.min).toCron,
       "0 9 15 6 *"
     )
   }
 
   test("cleanup on the 1st of the month or any Friday at 4:30 AM") {
     assertEquals(
-      Schedule.onThe(1.dom).orOn(Fri).at(4.h, 30.min).toCron,
+      Schedule.onThe(1.st).orOn(Fri).at(4.h, 30.min).toCron,
       "30 4 1 * 5"
     )
     assertEquals(
-      Schedule.onThe(1.dom).orOn(Fri).at(4.h, 30.min).humanReadable,
+      Schedule.onThe(1.st).orOn(Fri).at(4.h, 30.min).humanReadable,
       "At 4:30 AM, on day 1 of the month or on Friday"
     )
   }
@@ -79,7 +79,7 @@ class ExamplesTest extends FunSuite {
   test("compile-error snippets fail on the phase types, not lost scope") {
     assertEquals(compileErrors("Schedule.daily.at(9.h, 0.min)"), "")
     assertEquals(compileErrors("Schedule.on(Mon)"), "")
-    assertEquals(compileErrors("Schedule.onThe(1.dom)"), "")
+    assertEquals(compileErrors("Schedule.onThe(1.st)"), "")
     assertEquals(compileErrors("Schedule.in(Month.June).daily"), "")
   }
 }
