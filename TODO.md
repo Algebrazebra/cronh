@@ -29,3 +29,6 @@ Test wraparound for ranges like MonthRange, etc.
 Feature: except syntax
 Except syntax on ranges: Monday to Friday except (Wednesday, Thursday)
 All except Monday
+
+
+Make sure that with import cronh.dsl.* everything is in scope: range syntax, aliases, literals, etc.
