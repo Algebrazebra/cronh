@@ -1,6 +1,7 @@
 package cronh.dsl
 
 import cronh.domain.fieldTypes.Month
+import cronh.dsl.aliases.{Fri, Mon}
 import cronh.render.{humanReadable, toCron}
 import munit.FunSuite
 
@@ -67,19 +68,19 @@ class ExamplesTest extends FunSuite {
     assert(
       compileErrors("Schedule.daily.at(9.h, 0.min).at(14.h, 0.min)").nonEmpty
     )
-    assert(compileErrors("Schedule.on(Mon).onThe(1.dom)").nonEmpty)
+    assert(compileErrors("Schedule.on(Mon).onThe(1.st)").nonEmpty)
     assert(compileErrors("Schedule.daily.in(Month.June)").nonEmpty)
   }
 
   // Positive control: prove each snippet above fails because of the phase types,
-  // not because a name (Schedule, .at, .daily, .on, Mon, .dom, Month) went out of
+  // not because a name (Schedule, .at, .daily, .on, Mon, .th, Month) went out of
   // scope. If a rename broke resolution instead, these would start reporting
   // errors while the `.nonEmpty` assertions above stayed green and stopped
   // testing anything. (Mirrors the scope check the deleted PhantomTest had.)
   test("compile-error snippets fail on the phase types, not lost scope") {
     assertEquals(compileErrors("Schedule.daily.at(9.h, 0.min)"), "")
     assertEquals(compileErrors("Schedule.on(Mon)"), "")
-    assertEquals(compileErrors("Schedule.onThe(1.st)"), "")
+    assertEquals(compileErrors("Schedule.onThe(15.th)"), "")
     assertEquals(compileErrors("Schedule.in(Month.June).daily"), "")
   }
 }
