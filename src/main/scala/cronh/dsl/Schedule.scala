@@ -10,24 +10,109 @@ import cronh.dsl.aliases.{Saturdays, Sundays}
   *
   * The DSL is designed to read easily and naturally. It uses a fluent interface
   * for building a cron expression from the largest time unit (months) to the
-  * smallest (minutes). This goes against the field order of POSIX cron
-  * expressions. However, this is an intentional design choice. By imposing an
-  * order on the DSL methods, it's easier to guarantee correctness and natural
-  * language legibility.
+  * smallest (minutes). This goes against the field order of cron expressions.
+  * However, this is an intentional design choice. By imposing an order on the
+  * DSL methods, it's easier to guarantee semantics and natural language
+  * legibility.
   *
   * ## Usage examples
   *
-  * TODO: basic example going from month to minute show that time can also be
-  * specified with time literal (requires import)
+  * The DSL methods specify parts of the desired schedule until we hit a
+  * "terminal" method that returns a [[CronExpression]]. Generally, the methods
+  * are organized in two phases: the day phase and the time phase.
   *
-  * of course, month and day can be skipped (weekdays or daily method) selecting
-  * one or many selecting a range
+  * ### The day phase
   *
-  * // Examples Schedule.in(June).onThe(15.th).at(9.h, 0.min)
+  * All examples in this section are unfinished, because they leave out the time
+  * phase
+  *
+  * We can specify the month and the day of the month or the day of the week:
+  * ```scala
+  * Schedule.in(January).on(Mondays)
+  * Schedule.in(January).onThe(1.st)
+  * ```
+  *
+  * It's possible to select multiple values, pre-defined aliases or ranges:
+  * ```scala
+  * Schedule.in(January, February, March).on(Mondays, Tuesdays, Wednesdays)
+  * Schedule.in(January to March).on(Monays to Wednesdays)
+  * Schedule.in(CQ1).on(Weekdays)
+  * Schedule.in(CQ1).on(Weekends)
+  * ```
+  *
+  * And in case you want to combine weekdays with days of the month, you can.
+  * Just keep in mind, they combine with "OR" and not "AND" as the DSL tries to
+  * make clear:
+  * ```scala
+  * Schedule.in(June).on(Mondays).orOnThe(15.th
+  * Schedule.in(June).onThe(15.th).orOn(Mondays)
+  * ```
+  *
+  * And of course, setting the month is optional:
+  * ```
+  * Schedule.on(Mondays)
+  * Schedule.onThe(15.th)
+  * ```
+  *
+  * To schedule every day, simply use `daily` to skip straight to the time
+  * phase.
+  * ```scala
+  * Schedule.daily
+  * ```
+  *
+  * ### The time phase
+  *
+  * After completing the day phase, we can start the time phase. All the
+  * examples use `daily` as the shortest way to complete the day phase and enter
+  * the time phase.
+  *
+  * The simplest time schedule is hourly at a specific minute mark:
+  * ```scala
+  * Schedule.daily.everyHour
+  * Schedule.daily.everyHour(at = 30.min)
+  * ```
+  *
+  * Specifying an exact time is also straightforward:
+  * ```scala
+  * Schedule.daily.at(time"09:00")
+  * Schedule.daily.at(time"9:00 am")
+  *
+  * // or without the string interpolation
+  * Schedule.daily.at(Time(hour=9.h, minute=0.min)
+  *
+  * // The examples now complete the schedule, returning CronExpression.
+  * // This makes the `toCron` available:
+  * Schedule.daily.at(time"09:00").toCron == "0 9 * * *"
+  * ```
+  *
+  * Setting multiple times is also possible, but because we are dealing with
+  * cron syntax, it's not quite as straightforward as the previous example.
+  * Instead, we have to specify the hour and minute marks which form a
+  * cross-product.
+  * ```scala
+  * Schedule.daily.at(9.h).at(0.min)
+  * Schedule.daily
+  *   .at(9.h, 13.h)
+  *   .at(0.min, 30.min) // fires at 9:00, 9:30, 13:00 and 13:30
+  *
+  * // We can also apply range syntax here. Oh, and it's inclusive of the end!
+  * Schedule.daily
+  *   .at(9.h to 13.h)
+  *   .everyMinute // fires every minute from 09:00 to 13:59 inclusive
+  *
+  * // There is also the between method which has an exclusive end:
+  * Schedule.daily
+  *   .between(9.h, 13.h)
+  *   .everyMinute // fires every minute from 09:00 to 12:59
+  * ```
+  *
+  * ### Completed schedule
+  *
+  * Methods that return a [[CronExpression]] are terminal methods, because they
+  * complete the schedule definition. Then, the `toCron` method is available to
+  * produce the cron schedule as a string.
   *
   * ## What's not possible
-  *
-  * Tricky beast: The OR between DoM and DoW
   *
   * // What's not possible: Schedule.at(9.h) has two problems:
   *   1. It soudns like it's a one-off, not recurring
