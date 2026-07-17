@@ -111,18 +111,6 @@ import cronh.dsl.aliases.{Saturdays, Sundays}
   * Methods that return a [[CronExpression]] are terminal methods, because they
   * complete the schedule definition. Then, the `toCron` method is available to
   * produce the cron schedule as a string.
-  *
-  * ## What's not possible
-  *
-  * // What's not possible: Schedule.at(9.h) has two problems:
-  *   1. It soudns like it's a one-off, not recurring
-  *   2. Even for people that know it's about a cron expression, the recurrence
-  *      is not obvious. Most would probably implicitly assume a daily
-  *      recurrence, but I think it's better to be explicit. Also, people would
-  *      likely assume that this scheduling happens at 0.min, but the most
-  *      idiomatic cron way would be that this means every minute at 9.h Again!
-  *      Better to be explicit! Therefore, the DSL does not allow this and
-  *      forces: Schedule.daily.at(9.h, 0.min)
   */
 object Schedule extends MonthSelection, DaySelection {
   protected def cronExpr: CronExpressionBuilder = CronExpressionBuilder.allUnset
