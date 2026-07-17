@@ -17,10 +17,6 @@ import org.scalacheck.Prop.forAll
 
 class ScheduleTest extends ScalaCheckSuite {
 
-  // 6. ranges: for month, weekdays and month days incl. wraparound
-  //    check they are inclusive and covering
-  // TODO: test wrap around ranges. For months: Now to March --> 11-12, 1-3
-
   test("DSL allows selection of one month or multiple months") {
     assertEquals(Schedule.in(January).daily.everyMinute.toCron, "* * * 1 *")
     assertEquals(
