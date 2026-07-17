@@ -8,6 +8,9 @@ import cronh.dsl.TimeParseError.{InvalidHour, InvalidMinute, InvalidTimeFormat}
   * Since this is used in the context of cron expressions, midnight must be
   * represented as 00:00. The time 24:00 cannot be represented. This is because
   * a cron expression doesn't accept 24 in the hour field.
+  *
+  * An elegant way to instantiate a `Time` is via an interpolated string
+  * literal: `time"13:30"`, `time"1:30 pm"`, etc.
   */
 final case class Time(hour: Hour, minute: Minute) {
 

@@ -25,6 +25,7 @@ Have short form months and long form (Jan, January)
 
 
 Test wraparound for ranges like MonthRange, etc.
+Implement it in the Range class; NOT IN DOMAIN!!!
 
 Feature: except syntax
 Except syntax on ranges: Monday to Friday except (Wednesday, Thursday)
@@ -32,3 +33,11 @@ All except Monday
 
 
 Make sure that with import cronh.dsl.* everything is in scope: range syntax, aliases, literals, etc.
+
+
+Have an LLM go through all the scaladoc and check it for improvements and natural soundingness and clarity.
+
+
+In Schedule: how can I rename Hour and Minute to HourMark and MinuteMark? This is more descriptive and could 
+add the abstraction layer of the domain types.
+

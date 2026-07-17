@@ -132,16 +132,80 @@ final class MonthChosen(protected val base: CronExpressionBuilder)
   protected def cronExpr: CronExpressionBuilder = base
 }
 
+/** This trait carries the minute-selection methods. */
+trait MinuteSelection {
+  protected def cronExpr: CronExpressionBuilder
+
+  /** Configures the scheduling for every minute. */
+  def everyMinute: CronExpression =
+    cronExpr.copy(minute = Some(Field.all)).build()
+
+  /** Configures the scheduling in an interval of the given minutes.
+    *
+    * **Footgun alert!** Cron cannot actually schedule something every X minutes
+    * if X is not a divisor of 60. For example, scheduling every 25 minutes
+    * means firing at: 09:00, 09:25, 09:50, 10:00, 10:25, etc. This means every
+    * third interval is only 10 minutes long instead of the expected 25!
+    *
+    * Choose one of the following values to avoid the potential footgun: 1, 2,
+    * 3, 4, 5, 6, 10, 12, 15, 20, 30
+    */
+  def every(minutes: Minute): CronExpression = {
+    val minuteField = minutes.value match {
+      case 1 => Field.all
+      case x =>
+        val minuteMarks = (0 until 60 by x).map(Minute(_))
+        Field.of(minuteMarks.head, minuteMarks.tail: _*)
+    }
+    cronExpr.copy(minute = Some(minuteField)).build()
+  }
+}
+
+/** Represents that the user set the hour of the cron expression. */
+final class HourChosen(protected val base: CronExpressionBuilder)
+    extends MinuteSelection {
+  protected def cronExpr: CronExpressionBuilder = base
+
+  /** Configures the scheduling for the given minute marks. */
+  def at(m: Minute, ms: Minute*): CronExpression = cronExpr
+    .copy(
+      minute = Some(Field.of(m, ms: _*))
+    )
+    .build()
+
+  def at(ms: MinuteRange): CronExpression = cronExpr
+    .copy(
+      minute = Some(ms.toField)
+    )
+    .build()
+
+}
+
 /** The time phase is the first place where the DSL's terminal verbs lie.
   * Terminal verbs are the methods that finalize the configuration of the
   * schedule by converting the intermediate [[CronExpressionBuilder]]
   * representation to [[CronExpression]].
   */
-class TimePhase(protected val cronExpr: CronExpressionBuilder):
+class TimePhase(protected val cronExpr: CronExpressionBuilder)
+    extends MinuteSelection:
 
-  /** Configures the time of day. */
-  // TODO: example of how to use the time literal time"13:00" or time"1 am"
-  // TODO: explanation why it's not possible to use multiple time literals
+  /** Configures the time of the schedule.
+    *
+    * You can specify a `Time` using a string interpolated literal:
+    * `time"13:30"`.
+    *
+    * The following snippet illustrates both options in a fully specified
+    * schedule:
+    * ```scala
+    * Schedule.daily.at(time"13:30")
+    * Schedule.daily.at(time"1:30 pm")
+    * Schedule.daily.at(Time(hour = 13, minute = 30))
+    * ```
+    *
+    * Due to the nature of cron, setting multiple times like this in a single
+    * schedule is not possible. For this use case, you'll have to use the much
+    * less intuitive alternative method overloads.
+    */
   def at(time: Time): CronExpression = {
     cronExpr
       .copy(
@@ -151,31 +215,79 @@ class TimePhase(protected val cronExpr: CronExpressionBuilder):
       .build()
   }
 
-  def at(h: Hour, m: Minute): CronExpression = cronExpr
-    .copy(hour = Some(Field.of(h)), minute = Some(Field.of(m)))
-    .build()
+  def at(h: Hour, hs: Hour*): HourChosen = HourChosen(
+    cronExpr
+      .copy(hour = Some(Field.of(h, hs: _*)))
+  )
 
-  // TODO: do I want this even?
-  // It's not explicit what happens with the minutes.
-  // If I allow minutes to be specified, I need HourFixed as return type.
-  // Then having at(15, 17).min(7, 47, 55) isn't very readable.
-  // Then again, how else would I represent the product of these hours and minutes?
-  // NO; we will have 09:00 -->. then at(9.h.) doesn't make sense because it could be written explicitly
-  // only other use case would be at(9.h).every(15.min)
-  def at(h: Hour, hs: Hour*): CronExpression = cronExpr
-    .copy(hour = Some(Field.of(h, hs: _*)), minute = Some(Field.of(0.min)))
-    .build()
+  def at(hs: HourRange): HourChosen = HourChosen(
+    cronExpr.copy(hour = Some(hs.toField))
+  )
 
-  /*
-  def hourly: HourFixed =
-    HourFixed(
-      model.copy(hour = FieldSpec.Star, minute = FieldSpec.Nums(List(0)))
-    )
-   */
-  def between(lo: Hour, hi: Hour): Any = ???
+  /** Configures the scheduling for the given range of hours.
+    *
+    * Note that the end hour is exclusive! For example, scheduling
+    * `.between(9.h, 17.h).at(0.min)` will not fire at 17:00. This method is a
+    * more readable alternative to using range syntax like
+    * `.at(9.h until 17.h)`. This is in contrast to the alternative range syntax
+    * `.at(9.h to 17.h)` which is inclusive!
+    */
+  def between(startInclusive: Hour, endExclusive: Hour): HourChosen = {
+    if (startInclusive == endExclusive) {
+      throw IllegalArgumentException(
+        "The start and end of the range defined by `.between` must not be same."
+      )
+    }
+    // TODO: replace inclusive range with exclusive, i.e. `until` when it's implemented
+    val equivalentInclusiveEnd = Hour(endExclusive.value - 1)
+    at(Range[Hour](from = startInclusive, to = equivalentInclusiveEnd))
+  }
 
-  def everyMinute: CronExpression =
-    cronExpr.copy(minute = Some(Field.all)).build()
+  // Not offering a `every(hours: Hour)` method similar to `every(minutes: Minute)` is a deliberate choice.
+  // The problem with this method would be that it allows continuing with all methods of `HourChosen` which
+  // allows the following: Schedule.daily.every(2.h).at(15.min, 45.min)
+  // Unfortunately, at first glance this would suggest that it runs every 2 hours.
+  // The intervals aren't equal and neither of them are actually 2 hours.
+  // Additionally, cron schedules cannot schedule regular hourly intervals for intervals that aren't even divisors of 24.
+  // Therefore, it was decided to offer `every{Two, Three, Four}Hours` instead, which circumvents both issues.
+
+  /** Configures the scheduling to every hour at the given minute mark,
+    * defaulting to the full hour.
+    */
+  def everyHour(at: Minute = 0.min): CronExpression = everyXHours(1)(at)
+
+  /** Configures the scheduling to every hour on the hour. */
+  val everyHour: CronExpression = everyHour(at = 0.min)
+
+  /** Configures the scheduling to every second hour (starting at midnight) at
+    * the given minute mark, defaulting to the full hour.
+    */
+  def everyTwoHours(at: Minute = 0.min): CronExpression = everyXHours(2)(at)
+
+  /** Configures the scheduling to every third hour (starting at midnight) at
+    * the given minute mark, defaulting to the full hour.
+    */
+  def everyThreeHours(at: Minute = 0.min): CronExpression = everyXHours(3)(at)
+
+  /** Configures the scheduling to every fourth hour (starting at midnight) at
+    * the given minute mark, defaulting to the full hour.
+    */
+  def everyFourHours(at: Minute = 0.min): CronExpression = everyXHours(4)(at)
+
+  private def everyXHours(x: 1 | 2 | 3 | 4)(at: Minute): CronExpression = {
+    val hourField = x match {
+      case 1 => Field.all
+      case x =>
+        val hourMarks = (0 until 24 by x).map(Hour(_))
+        Field.of(hourMarks.head, hourMarks.tail: _*)
+    }
+    cronExpr
+      .copy(
+        hour = Some(hourField),
+        minute = Some(Field.of(at))
+      )
+      .build()
+  }
 
 /** A variant of [[CronExpression]] that allows representing unset fields with
   * `Option`.

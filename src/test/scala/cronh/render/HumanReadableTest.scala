@@ -1,22 +1,23 @@
 package cronh.render
 
-import cronh.domain.fieldTypes.{DayOfMonth, DayOfWeek, Hour, Minute, Month}
-import cronh.dsl.{aliases, *}
-import cronh.dsl.aliases.{Fri, Mon, Mondays, Thu, Tue, Wed, Noon}
+import cronh.domain.fieldTypes.*
+import cronh.dsl.Time.TimeStringContext
+import cronh.dsl.aliases.*
+import cronh.dsl.*
 import munit.FunSuite
 
 class HumanReadableTest extends FunSuite {
 
   test("daily at an afternoon time") {
     assertEquals(
-      Schedule.daily.at(14.h, 30.min).humanReadable,
+      Schedule.daily.at(time"14:30").humanReadable,
       "At 2:30 PM, every day"
     )
   }
 
   test("weekday mornings") {
     assertEquals(
-      Schedule.weekdays.at(9.h).humanReadable,
+      Schedule.weekdays.at(9.h).at(0.min).humanReadable,
       "At 9:00 AM, on weekdays"
     )
   }
@@ -30,44 +31,42 @@ class HumanReadableTest extends FunSuite {
 
   test("an explicit Monday-through-Friday list reads as weekdays") {
     assertEquals(
-      Schedule.on(Mon, Tue, Wed, Thu, Fri).at(9.h).humanReadable,
+      Schedule.on(Mon, Tue, Wed, Thu, Fri).at(9.h).at(0.min).humanReadable,
       "At 9:00 AM, on weekdays"
     )
   }
 
   test("weekends are recognized") {
     assertEquals(
-      Schedule.weekends.at(0.h, 0.min).humanReadable,
+      Schedule.weekends.at(0.h).at(0.min).humanReadable,
       "At 12:00 AM, on weekends"
     )
   }
 
-  /*
   test("hourly schedules") {
     assertEquals(
-      Schedule.hourly.humanReadable,
+      Schedule.daily.everyHour(at = 0.min).humanReadable,
       "At minute 0 past every hour, every day"
     )
   }
 
   test("hour ranges from between") {
     assertEquals(
-      Schedule.weekdays.between(9.h, 17.h).humanReadable,
+      Schedule.weekdays.between(9.h, 17.h).at(0.min).humanReadable,
       "At minute 0 past every hour from 9 AM to 5 PM, on weekdays"
     )
   }
-   */
 
   test("multiple months join with and") {
     assertEquals(
-      Schedule.in(Month.June, Month.July).daily.at(9.h).humanReadable,
+      Schedule.in(Month.June, Month.July).daily.at(9.h).at(0.min).humanReadable,
       "At 9:00 AM, every day, in June and July"
     )
   }
 
   test("day-of-month and day-of-week together read as or (Vixie OR)") {
     assertEquals(
-      Schedule.onThe(1.st).orOn(Mondays).at(9.h, 0.min).humanReadable,
+      Schedule.onThe(1.st).orOn(Mondays).at(9.h).at(0.min).humanReadable,
       "At 9:00 AM, on day 1 of the month or on Monday"
     )
   }
@@ -83,7 +82,7 @@ class HumanReadableTest extends FunSuite {
     )
     assertEquals(
       expression.humanReadable,
-      "Every minute from 9 AM to 5 PM, every day"
+      "Every minute from 9 AM to 6 PM, every day"
     )
   }
 
