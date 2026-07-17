@@ -2,7 +2,9 @@ package cronh.dsl
 
 import cronh.domain.Generators.{
   given_Arbitrary_DayOfMonth,
-  given_Arbitrary_DayOfWeek
+  given_Arbitrary_DayOfWeek,
+  given_Arbitrary_Hour,
+  given_Arbitrary_Minute
 }
 import cronh.domain.fieldTypes.{DayOfMonth, DayOfWeek, Hour, Minute}
 import cronh.domain.fieldTypes.Month.{February, January, March}
@@ -10,6 +12,7 @@ import cronh.dsl
 import cronh.dsl.aliases.*
 import cronh.render.toCron
 import munit.{FunSuite, ScalaCheckSuite}
+import org.scalacheck.{Gen, Prop}
 import org.scalacheck.Prop.forAll
 
 class ScheduleTest extends ScalaCheckSuite {
@@ -117,15 +120,34 @@ class ScheduleTest extends ScalaCheckSuite {
     }
   }
 
-  // The tests should test created cron schedules against the string
-  // The following time cases should be tested with holding the day cases constant: daily
-  // 4. Setting time with multiple .h and multiple .min
-  // 5. Every minute is available (both immediately and after setting hours)
+  property("at.at works correctly") = forAll { (h: Hour, m: Minute) =>
+    assertEquals(
+      Schedule.daily.at(h).at(m).toCron,
+      Schedule.daily.at(Time(h, m)).toCron
+    )
+  }
 
-  // Test Day ranges: one, many, day range -->  what happens with a wraparound?
-  // TODO: Document: from 15th june to 15th of august is NOT possible in cron
-  // Test Day selection: when setting the 15th, it's possible to select a weekday after
-  // Test Day selection can be skipped
+  property("Between sets an exclusive end") = {
+    val bounds: Gen[(Hour, Hour)] = for {
+      start <- Gen.choose(Hour.MinValue, Hour.MaxValue - 1).map(Hour(_))
+      end <- Gen
+        .choose(start.value + 1, Hour.MaxValue)
+        .map(Hour(_))
+    } yield (start, end)
+    Prop.forAll(bounds) { (start, end) =>
+      assertEquals(
+        Schedule.daily.between(start, end).at(30.min).toCron,
+        Schedule.daily
+          .at(Range[Hour](start, Hour(end.value - 1)))
+          .at(30.min)
+          .toCron
+      )
+    }
+  }
+
+  test("EveryHour sets * aka Field.all") {
+    assertEquals(Schedule.daily.everyHour(0.min).hour, cronh.domain.Field.all)
+  }
 
   test("Time formats are equivalent") {
     import cronh.dsl.Time.*
@@ -141,38 +163,24 @@ class ScheduleTest extends ScalaCheckSuite {
     )
   }
 
-  property("Setting multiple hours and minutes renders the correct cron") {}
-
-  test("Schedule.daily.at(14.h).at(30.m) renders 30 14 * * *") {
+  test("General unit tests for rendering cron expressions") {
     assertEquals(Schedule.daily.at(14.h).at(30.min).toCron, "30 14 * * *")
-  }
-
-  test("Schedule.weekdays.at(9.h) renders 0 9 * * 1-5") {
     assertEquals(Schedule.weekdays.at(9.h).at(0.min).toCron, "0 9 * * 1-5")
-  }
-
-  test("Schedule.on(Mon, Fri).at(noon) renders 0 12 * * 1,5") {
     assertEquals(Schedule.on(Mon, Fri).at(Noon).toCron, "0 12 * * 1,5")
-  }
-
-  test(
-    "Schedule.weekdays.between(9.h, 17.h).at(0.min) renders 0 9-17 * * 1-5"
-  ) {
     assertEquals(
       Schedule.weekdays.between(9.h, endExclusive = 17.h).at(0.min).toCron,
       "0 9-16 * * 1-5"
     )
-  }
-
-  test("Schedule.weekends.at(8.h).at(0.min) renders 0 8 * * 6,0") {
     assertEquals(Schedule.weekends.at(8.h).at(0.min).toCron, "0 8 * * 6,0")
-  }
-
-  test("Schedule.onThe(1.dom, 15.dom).at(6.h).at(0.min) renders 0 6 1,15 * *") {
     assertEquals(
       Schedule.onThe(1.st, 15.th).at(6.h).at(0.min).toCron,
       "0 6 1,15 * *"
     )
+    assertEquals(Schedule.daily.everyMinute.toCron, "* * * * *")
+    assertEquals(Schedule.daily.every(15.min).toCron, "0,15,30,45 * * * *")
+    assertEquals(
+      Schedule.daily.everyTwoHours(at = 0.min).toCron,
+      "0 0,2,4,6,8,10,12,14,16,18,20,22 * * *"
+    )
   }
-
 }
