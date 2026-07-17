@@ -2,6 +2,7 @@ package cronh.dsl
 
 import cronh.domain.fieldTypes.*
 import cronh.domain.{CronExpression, Field}
+import cronh.dsl.aliases.{Saturdays, Sundays}
 
 /** # Entry point for the scheduling DSL.
   *

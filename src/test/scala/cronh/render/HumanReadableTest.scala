@@ -1,7 +1,8 @@
 package cronh.render
 
-import cronh.domain.fieldTypes.{DayOfWeek, Hour, Minute, Month, DayOfMonth}
-import cronh.dsl.*
+import cronh.domain.fieldTypes.{DayOfMonth, DayOfWeek, Hour, Minute, Month}
+import cronh.dsl.{aliases, *}
+import cronh.dsl.aliases.{Fri, Mon, Mondays, Thu, Tue, Wed, Noon}
 import munit.FunSuite
 
 class HumanReadableTest extends FunSuite {

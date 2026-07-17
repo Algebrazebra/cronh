@@ -6,6 +6,16 @@ import cronh.domain.Generators.{
 }
 import cronh.domain.fieldTypes.{DayOfMonth, DayOfWeek}
 import cronh.domain.fieldTypes.Month.{February, January, March}
+import cronh.dsl.aliases.{
+  Fri,
+  Mon,
+  Mondays,
+  Noon,
+  Tuesdays,
+  Wednesdays,
+  Weekdays,
+  Weekends
+}
 import cronh.render.toCron
 import munit.{FunSuite, ScalaCheckSuite}
 import org.scalacheck.Prop.forAll
