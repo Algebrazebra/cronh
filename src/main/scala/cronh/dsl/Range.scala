@@ -1,7 +1,7 @@
 package cronh.dsl
 
 import cronh.domain.Field
-import cronh.domain.fieldTypes.{DayOfWeek, DayOfMonth, Month}
+import cronh.domain.fieldTypes.{DayOfWeek, DayOfMonth, Month, Hour, Minute}
 
 /** Defines an inclusive range of ordered values of type T.
   *
@@ -30,6 +30,12 @@ type DayOfWeekRange = Range[DayOfWeek]
 
 /** A range of days, e.g., 5.th to 15.th */
 type DayOfMonthRange = Range[DayOfMonth]
+
+/** A range of hours, e.g., 9.h to 17.h */
+type HourRange = Range[Hour]
+
+/** A range of minutes, e.g. 0.min to 30.min */
+type MinuteRange = Range[Minute]
 
 trait Ranging[T]:
   extension (from: T) infix def to(to: T): Range[T]

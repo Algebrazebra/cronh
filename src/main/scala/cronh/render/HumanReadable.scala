@@ -52,9 +52,9 @@ private object HumanReadable {
       case (Term.All :: Nil, Term.Single(h) :: Nil) =>
         s"Every minute between ${clock(h, Minute(0))} and ${clock(h, Minute(59))}"
       case (Term.Single(m) :: Nil, Term.Range(from, to) :: Nil) =>
-        s"At minute ${m.value} past every hour from ${hourName(from)} to ${hourName(to)}"
+        s"At minute ${m.value} past every hour from ${hourName(from)} to ${hourName(Hour(to.value + 1))}"
       case (Term.All :: Nil, Term.Range(from, to) :: Nil) =>
-        s"Every minute from ${hourName(from)} to ${hourName(to)}"
+        s"Every minute from ${hourName(from)} to ${hourName(Hour(to.value + 1))}"
       case _ =>
         s"At minute ${describe(minute)(_.value.toString)} " +
           s"past hour ${describe(hour)(_.value.toString)}"
