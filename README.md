@@ -14,7 +14,7 @@ Consider the following:
 ```scala 3
 val cron = "30 14 * * 1-5"
 
-val cronh = Schedule.weekdays.at(time"14:00").toCron
+val cronh = Schedule.weekdays.at(time"14:30").toCron
 ```
 
 Both values, `cron` and `cronh`, represent the same schedule.
