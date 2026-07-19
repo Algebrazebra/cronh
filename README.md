@@ -98,19 +98,13 @@ It's still possible to express the "everyFiveHours" by listing the hours directl
 2. Cron assumes an OR relationship between fields, including the day of month and day of week field. A lot of people intuitively expect an AND relationship.
 The DSL makes this explicit: `Schedule.onThe(15.th).orOn(Mondays)` to prevent this common misinterpreation.
 
-## DSL reference
-
-1. First select the month (.in)
-2. Day: daily, weekends, weekdays, onThe, on(weekdays)
-3. Then select the time: 
+This section is by no means a complete description of the design considerations, but only serves to highlight a few illustrative examples of the design rationale.
 
 ## Scope
 
 The first version targets the POSIX/Vixie five-field baseline. Steps (`*/n`), Quartz tokens
 (`L`, `W`, `#`, `?`), seconds fields, and parsing cron strings back into the
-model are out of scope for now — see [DESIGN.md](DESIGN.md) for the full
-design rationale, edge-case catalog, and roadmap. Realistic usage lives in
-[`examples/`](examples/Schedules.scala).
+model are out of scope for now — see [DESIGN.md](DESIGN.md) for more context.
 
 ## Development
 
