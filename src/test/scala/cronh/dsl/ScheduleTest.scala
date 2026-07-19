@@ -133,7 +133,7 @@ class ScheduleTest extends ScalaCheckSuite {
       assertEquals(
         Schedule.daily.between(start, end).at(30.min).toCron,
         Schedule.daily
-          .at(Range[Hour](start, Hour(end.value - 1)))
+          .at(start until end)
           .at(30.min)
           .toCron
       )

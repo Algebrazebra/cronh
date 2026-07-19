@@ -43,6 +43,9 @@ Schedule.in(December).onThe(24.th).at(time"20:00")
 Schedule.on(Weekdays).everyHour.toCron
 Schedule.in(CQ1).on(Mondays).everyTwoHours(at = 30.min).toCron
 
+// Inclusive ranges use `to`; `until` excludes the end.
+Schedule.daily.at(9.h until 17.h).at(0.min).toCron // "0 9-16 * * *"
+
 import cronh.render.*
 
 Schedule.weekdays.at(9.h).humanReadable // "At 9:00 AM, on weekdays"

@@ -1,7 +1,14 @@
 package cronh.dsl
 
 import cronh.domain.Field
-import cronh.domain.fieldTypes.{DayOfWeek, DayOfMonth, Month, Hour, Minute}
+import cronh.domain.fieldTypes.{
+  DayOfWeek,
+  DayOfMonth,
+  DomainBounds,
+  Month,
+  Hour,
+  Minute
+}
 
 /** Defines an inclusive range of ordered values of type `T`.
   *
@@ -21,6 +28,28 @@ import cronh.domain.fieldTypes.{DayOfWeek, DayOfMonth, Month, Hour, Minute}
 case class Range[T: Ordering](from: T, to: T) {
   private[dsl] def toField: Field[T] = Field.range(from, to)
 }
+
+object Range:
+  /** Converts the exclusive range `[from, endExclusive)` to its equivalent
+    * inclusive representation.
+    */
+  private[dsl] def exclusive[T: Ordering: DomainBounds](
+      from: T,
+      endExclusive: T
+  ): Range[T] =
+    require(
+      Ordering[T].lt(from, endExclusive),
+      "Start of an exclusive range must be less than its end."
+    )
+
+    val inclusiveEnd =
+      summon[DomainBounds[T]].predecessor(endExclusive).getOrElse {
+        throw IllegalArgumentException(
+          s"Cannot determine the value preceding $endExclusive."
+        )
+      }
+
+    Range(from, inclusiveEnd)
 
 /** A range of months, e.g., `January to March`. */
 type MonthRange = Range[Month]
@@ -63,3 +92,28 @@ extension (from: Hour) infix def to(to: Hour): HourRange = Range(from, to)
 
 /** Creates an inclusive range of minutes. */
 extension (from: Minute) infix def to(to: Minute): MinuteRange = Range(from, to)
+
+/** Creates an exclusive-end range of months. */
+extension (from: Month)
+  infix def until(endExclusive: Month): MonthRange =
+    Range.exclusive(from, endExclusive)
+
+/** Creates an exclusive-end range of days of the week. */
+extension (from: DayOfWeek)
+  infix def until(endExclusive: DayOfWeek): DayOfWeekRange =
+    Range.exclusive(from, endExclusive)
+
+/** Creates an exclusive-end range of days of the month. */
+extension (from: DayOfMonth)
+  infix def until(endExclusive: DayOfMonth): DayOfMonthRange =
+    Range.exclusive(from, endExclusive)
+
+/** Creates an exclusive-end range of hours. */
+extension (from: Hour)
+  infix def until(endExclusive: Hour): HourRange =
+    Range.exclusive(from, endExclusive)
+
+/** Creates an exclusive-end range of minutes. */
+extension (from: Minute)
+  infix def until(endExclusive: Minute): MinuteRange =
+    Range.exclusive(from, endExclusive)

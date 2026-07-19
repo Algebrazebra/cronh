@@ -19,7 +19,16 @@ class SingleImportTest extends FunSuite {
         .at(9.h to 17.h)
         .at(0.min to 30.min)
 
+    val exclusiveSchedule =
+      Schedule
+        .in(January until April)
+        .onThe(1.st until 4.th)
+        .orOn(Mondays until Fridays)
+        .at(9.h until 17.h)
+        .at(0.min until 30.min)
+
     assert(schedule != null)
+    assert(exclusiveSchedule != null)
     assertEquals(Noon.toString, "12:00")
     assertEquals(Midnight.toString, "00:00")
     assertEquals(CQ1.from, Jan)

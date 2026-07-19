@@ -44,8 +44,8 @@ DSL requires that relationship to be written explicitly with `orOn` or
 
 Integer literals such as `9.h`, `30.min`, and `15.th` are checked by macros.
 `time"..."` validates constant strings at compile time and interpolated strings
-at runtime. Range syntax is inclusive; `between(start, end)` is the explicitly
-exclusive-end exception.
+at runtime. Range syntax supports inclusive `to` and exclusive-end `until`;
+`between(start, end)` is the named equivalent for hour ranges.
 
 Cron fields describe sets, not elapsed durations. Interval helpers therefore
 expand to concrete minute or hour marks anchored at the beginning of their
