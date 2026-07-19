@@ -12,7 +12,7 @@ extension (expression: CronExpression) {
     * idioms `Monday-Friday` ("on weekdays") and `Saturday, Sunday` ("on
     * weekends"); anything else falls back to a literal field description. When
     * both day fields are constrained, they are joined with "or", reflecting
-    * Vixie OR semantics (DESIGN.md §4.5).
+    * Vixie OR semantics.
     */
   def humanReadable: String = HumanReadable.describe(expression)
 }
@@ -34,9 +34,9 @@ private object HumanReadable {
   }
 
   /** Collapses a field that contains [[Term.All]] to a plain wildcard. A field
-    * whose terms include `All` already denotes every value (Vixie OR, DESIGN.md
-    * §4.4), so the other terms are redundant; rendering them as a list produces
-    * ungrammatical output like "on day every and 1 of the month".
+    * whose terms include `All` already denotes every value, so the other terms
+    * are redundant; rendering them as a list produces ungrammatical output like
+    * "on day every and 1 of the month".
     */
   private def collapseAll[A](field: Field[A]): Field[A] =
     if (field.terms.contains(Term.All)) Field.all else field

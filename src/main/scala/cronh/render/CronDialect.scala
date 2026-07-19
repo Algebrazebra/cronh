@@ -7,8 +7,7 @@ import cronh.domain.fieldTypes.DayOfWeek
   * renders a full [[cronh.domain.CronExpression]].
   *
   * Everything that varies across cron flavors (weekday numbering, future `?` or
-  * `L` tokens) belongs here rather than in the domain model (DESIGN.md §2.11,
-  * §2.15).
+  * `L` tokens) belongs here rather than in the domain model.
   */
 trait CronDialect {
 

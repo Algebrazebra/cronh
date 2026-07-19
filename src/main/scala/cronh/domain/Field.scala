@@ -70,7 +70,7 @@ object Field {
       *     [[Term.Range]] (run of two or more)
       *
       * Normalization is opt-in: unnormalized fields are valid and render
-      * faithfully (DESIGN.md §4.4).
+      * faithfully.
       */
     def normalized(using ord: Ordering[A], bounds: DomainBounds[A]): Field[A] =
       if (field.terms.contains(Term.All)) all

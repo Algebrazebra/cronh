@@ -9,7 +9,7 @@ import cronh.domain.fieldTypes.{Hour, Minute, Month, DayOfMonth}
   * [[DayOfMonth]], [[Month]]) live in the companion. There is deliberately no
   * [[DayOfWeek]] instance here: weekday numbering varies by dialect (Unix
   * counts Sunday as 0, Quartz as 1), so that instance is provided by the
-  * [[CronDialect]] in use (DESIGN.md §2.11).
+  * [[CronDialect]] in use.
   */
 trait Render[A] {
 
