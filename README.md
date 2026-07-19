@@ -12,10 +12,8 @@ This library lets you define cron schedules that **you can actually read**.
 
 Consider the following:
 ```scala 3
-// What does this mean?
 val cron = "30 14 * * 1-5"
 
-// This one is self-explanatory
 val cronh = Schedule.weekdays.at(14.h, 30.m).toCron
 ```
 
@@ -25,13 +23,12 @@ Which definition do you find more readable?
 What's more, you can do this type-safely.
 Not a big surprise for a Scala library, isn't it?
 But it does mean that we can catch a lot of errors at compile time that might otherwise be a wrong or missed job execution.
-This includes things that are legal cron but are impossible schedules like `* * 30 2 *` (every minute on February 30).
 
+This library currently **targets Vixie cron**, arguably the most common cron implementation.
 
 ## Quick start
 
 Install the library by adding it to your `build.sbt`:
-// TODO
 ```build.sbt
 libraryDependencies += "io.github.algebrazebra" %% "cronh" % "<insert latest version>"
 ```
@@ -41,98 +38,75 @@ Then using it is quite straightforward:
 ```scala 3
 import cronh.dsl.*
 
-Schedule.daily.at(14.h, 30.m).toCron // "30 14 * * *"
-Schedule.weekdays.at(9.h).toCron // "0 9 * * 1-5"
-Schedule.on(Mon, Fri).at(Noon).toCron // "0 12 * * 1,5"
-Schedule.daily.on(Mon to Fri).at(9.h).toCron // "0 9 * * 1-5"
-Schedule.weekdays.between(9.h, 17.h).toCron // "0 9-17 * * 1-5"
-
+Schedule.daily.at(time"09:00").toCron
+Schedule.in(December).onThe(24.th).at(time"20:00")
+Schedule.on(Weekdays).everyHour.toCron
+Schedule.in(CQ1).on(Mondays).everyTwoHours(at = 30.min).toCron
 
 import cronh.render.*
 
 Schedule.weekdays.at(9.h).humanReadable // "At 9:00 AM, on weekdays"
 ```
 
-usage examples (insert codeblock)
+For a more detailed introduction, please see the ScalaDoc of the DSL entrypoint [Schedule.scala](src/main/scala/cronh/dsl/Schedule.scala).
+Sometimes the easiest way to learn is to look at a lot of examples. You can find some [here](examples/Schedules.scala).
 
-Examples of what won't work because compile time safety: (insert codeblock)
+## Correctness
 
+Generally, this library is designed with correctness in mind.
+Of course, in Scala, this means leveraging its type system and compile-time capabilities like macros.
+But it's also about designing the DSL so that the change of misreading or misunderstanding the specified schedule is minimized.
 
-## Caught at compile time
+### Compile time and runtime checks
 
-Out-of-range literals, double-set times, and conflicting day constraints are
-compile errors, not 3 AM surprises:
-
+In addition to basic type-safe modeling (i.e., providing a month value when a weekday value is expected), 
+literals for day of month, hours, and minute are checked at compile time:
 ```scala
-25.h                              // error: Hour must be between 0 and 23
-60.m                              // error: Minute must be between 0 and 59
-Schedule.daily.at(9.h).at(14.h)   // error: time already set
-Schedule.on(Mon).onDay(1.dom)     // error: day-of-week and day-of-month
-                                  //        conflict (Vixie ORs them!)
+// The following won't compile:
+Schedule.onThe(32.th).at(time"9:00")  // 32 is not a valid day of month
+Schedule.onThe(1.th).at(time"9:00")   // it's 1.st, not 1.th
+Schedule.daily.at(100.h, 61.h).at(-1.min, 61.min) // Not valid hours and minutes
 ```
 
-The last one matters: classic cron fires when *either* day field matches when
-both are set — almost never what was intended. `cronh` makes the combination
-unrepresentable in the DSL.
+Of course, the same checks are also made at runtime when compile time checking isn't possible.
+For example, when inserting values dynamically instead of using literals.
+
+Time string literals are currently only runtime checked.
+It's possible to do this at compile time, but it's not implemented yet.
+
+### Design considerations
+
+The DSL is designed for explicitness to prevent misunderstandings by making the DSL read as explicit as possible.
+There are also situations where human intuition is simply misaligned with how cron works.
+
+This can mean simple things like having `on(Mondays)` instead of `on(Monday)`. 
+The latter could be misinterpreted as non-reoccurring, whereas the former suggests recurrence.
+Similarly, an earlier version of the DSL allowed `Schedule.at(9.h)` which has three problems:
+1. The absence of a specified day suggests daily scheduling, because unspecified cron fields are assumed to be `*` 
+2. The absence of a specified minute mark suggests the full hour, but following the reasoning of the previous point, it should be every minute!
+3. It reads like it's not recurring when it should be.
+
+By requiring the explicit closing of the "day phase" with `daily` and forcing the user to set the minute, 
+the listed problems are solved: `Schedule.daily.at(time"09:00")`.
+
+Additionally, the DSL tries to protect against two common cron mistakes:
+1. Cron doesn't allow specifying perfect intervals in all cases.
+For example, cron-scheduling for every 25 minutes won't actually work like that.
+Every third interval will only be 10 minutes long as opposed to 25 minutes.
+By allowing only `every{Two, Three, Four}Hours` the problem is avoided. 
+It's still possible to express the "everyFiveHours" by listing the hours directly – which readers can't misinterpret.
+2. Cron assumes an OR relationship between fields, including the day of month and day of week field. A lot of people intuitively expect an AND relationship.
+The DSL makes this explicit: `Schedule.onThe(15.th).orOn(Mondays)` to prevent this common misinterpreation.
 
 ## DSL reference
 
-| Entry point | Default | Cron |
-| --- | --- | --- |
-| `Schedule.daily` | every day at 00:00 | `0 0 * * *` |
-| `Schedule.hourly` | every hour, on the hour | `0 * * * *` |
-| `Schedule.weekdays` | Mon-Fri at 00:00 | `0 0 * * 1-5` |
-| `Schedule.weekends` | Sat & Sun at 00:00 | `0 0 * * 6,0` |
-| `Schedule.monthly` | 1st of the month at 00:00 | `0 0 1 * *` |
-| `Schedule.yearly` | Jan 1st at 00:00 | `0 0 1 1 *` |
-| `Schedule.on(Mon, Fri)` | those weekdays at 00:00 | `0 0 * * 1,5` |
-| `Schedule.onDay(1.dom, 15.dom)` | those days at 00:00 | `0 0 1,15 * *` |
-
-| Refinement | Effect |
-| --- | --- |
-| `.at(14.h, 30.m)` | sets the time of day (once — twice is a compile error) |
-| `.at(9.h)` | sets the hour, on the hour |
-| `.between(9.h, 17.h)` | constrains the hour to a range; minute still settable via `.at(30.m)` |
-| `.on(Mon, Fri)` / `.on(Mon to Fri)` / `.on(Weekdays)` | constrains weekdays (list or inclusive range) |
-| `.onDay(15.dom)` | constrains days of the month |
-| `.in(Month.June)` | constrains months |
-
-Conveniences: `midnight`, `noon`, `Weekdays`, `Weekends`, and the day aliases
-`Mon` … `Sun` (with long forms `Monday` … `Sunday`). Adjacent weekdays compose
-into an inclusive range with `to`, mirroring the stdlib `1 to 5` convention:
-`Mon to Fri` or `Monday to Friday` both render as `1-5`.
-
-## Under the hood
-
-The DSL is sugar over a strictly typed model in `cronh.domain`: validated
-per-position types (`Minute`, `Hour`, `MonthDay`, `Month`, `DayOfWeek`), a
-three-shape `Term` ADT (`All`, `Single`, `Range`), a non-empty `Field`, and a
-five-field `CronExpression` whose phantom type parameters track what has been
-set. You can always drop down to it:
-
-```scala
-import cronh.domain.*
-
-val field: Field[Minute] =
-  Field.of(Minute(0), Minute(30)) ++ Field.range(Minute(45), Minute(50))
-```
-
-Redundant input (`1-5,3`, duplicates, overlapping ranges) is legal cron and is
-preserved as written; opt-in canonicalization is available:
-
-```scala
-(Field.range(Minute(1), Minute(5)) ++ Field.range(Minute(3), Minute(7))).normalized
-// Field.range(Minute(1), Minute(7))
-```
-
-Rendering is dialect-bound. Weekday numbering differs across cron flavors, so
-`DayOfWeek` carries no number; the dialect supplies it. `UnixCronDialect`
-(Sunday = 0) is the default, and ranges ending on Sunday are split into
-POSIX-valid lists (`Fri-Sun` → `5-6,0`).
+1. First select the month (.in)
+2. Day: daily, weekends, weekdays, onThe, on(weekdays)
+3. Then select the time: 
 
 ## Scope
 
-v1 targets the POSIX/Vixie five-field baseline. Steps (`*/n`), Quartz tokens
+The first version targets the POSIX/Vixie five-field baseline. Steps (`*/n`), Quartz tokens
 (`L`, `W`, `#`, `?`), seconds fields, and parsing cron strings back into the
 model are out of scope for now — see [DESIGN.md](DESIGN.md) for the full
 design rationale, edge-case catalog, and roadmap. Realistic usage lives in
@@ -145,3 +119,4 @@ sbt test          # build and test
 sbt ci            # exactly what GitHub Actions runs
 sbt scalafmtAll   # format
 ```
+
