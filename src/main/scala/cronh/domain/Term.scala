@@ -1,6 +1,6 @@
 package cronh.domain
 
-/** Represents a cron term as per the POSIX grammar. Can be understood as the
+/** Represents a cron term as per the Vixie grammar. Can be understood as the
   * "shape" of a cron field.
   */
 sealed trait Term[+A]

@@ -21,7 +21,7 @@ object UnixCronDialect extends CronDialect {
 
   /** The model orders weekdays Monday-first, so a range ending on Sunday (e.g.
     * `Friday-Sunday`) would naively render as the inverted — and invalid —
-    * `5-0`. Such ranges are split into the equivalent POSIX-valid list instead:
+    * `5-0`. Such ranges are split into the equivalent Vixie-valid list instead:
     * `5-6,0`.
     */
   override protected def renderDayOfWeek(field: Field[DayOfWeek]): String =
