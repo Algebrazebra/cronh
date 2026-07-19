@@ -46,3 +46,20 @@ object Ranging:
   /** Provides range syntax for any type with an [[Ordering]]. */
   given [T](using Ordering[T]): Ranging[T] with
     extension (from: T) infix def to(to: T): Range[T] = Range(from, to)
+
+/** Creates an inclusive range of months. */
+extension (from: Month) infix def to(to: Month): MonthRange = Range(from, to)
+
+/** Creates an inclusive range of days of the week. */
+extension (from: DayOfWeek)
+  infix def to(to: DayOfWeek): DayOfWeekRange = Range(from, to)
+
+/** Creates an inclusive range of days of the month. */
+extension (from: DayOfMonth)
+  infix def to(to: DayOfMonth): DayOfMonthRange = Range(from, to)
+
+/** Creates an inclusive range of hours. */
+extension (from: Hour) infix def to(to: Hour): HourRange = Range(from, to)
+
+/** Creates an inclusive range of minutes. */
+extension (from: Minute) infix def to(to: Minute): MinuteRange = Range(from, to)

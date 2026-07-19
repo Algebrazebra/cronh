@@ -2,7 +2,6 @@ package cronh.dsl
 
 import cronh.domain.fieldTypes.*
 import cronh.domain.{CronExpression, Field}
-import cronh.dsl.aliases.{Saturdays, Sundays}
 
 /** # Entry point for the scheduling DSL.
   *
@@ -23,7 +22,7 @@ import cronh.dsl.aliases.{Saturdays, Sundays}
   *
   * ### The day phase
   *
-  * All examples in this section are unfinished, because they leave out the time
+  * All examples in this section are unfinished because they leave out the time
   * phase
   *
   * We can specify the month and the day of the month or the day of the week:

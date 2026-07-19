@@ -1,7 +1,6 @@
 package cronh.dsl
 
 import cronh.domain.fieldTypes.Month
-import cronh.dsl.aliases.{Fri, Mon}
 import cronh.render.{humanReadable, toCron}
 import munit.FunSuite
 

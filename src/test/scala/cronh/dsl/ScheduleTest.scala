@@ -9,7 +9,6 @@ import cronh.domain.Generators.{
 import cronh.domain.fieldTypes.{DayOfMonth, DayOfWeek, Hour, Minute}
 import cronh.domain.fieldTypes.Month.{February, January, March}
 import cronh.dsl
-import cronh.dsl.aliases.*
 import cronh.render.toCron
 import munit.{FunSuite, ScalaCheckSuite}
 import org.scalacheck.{Gen, Prop}
