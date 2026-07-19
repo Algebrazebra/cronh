@@ -3,14 +3,14 @@ package cronh.dsl
 import cronh.domain.fieldTypes.{Hour, Minute}
 import cronh.dsl.TimeParseError.{InvalidHour, InvalidMinute, InvalidTimeFormat}
 
-/** Represents the time in 24h format HH:MM.
+/** Represents a time of day in 24-hour `HH:MM` form.
   *
   * Since this is used in the context of cron expressions, midnight must be
   * represented as 00:00. The time 24:00 cannot be represented. This is because
   * a cron expression doesn't accept 24 in the hour field.
   *
-  * An elegant way to instantiate a `Time` is via an interpolated string
-  * literal: `time"13:30"`, `time"1:30 pm"`, etc.
+  * Construct a value directly with validated [[Hour]] and [[Minute]] values, or
+  * use the `time` string interpolator: `time"13:30"` or `time"1:30 pm"`.
   */
 final case class Time(hour: Hour, minute: Minute) {
 
@@ -25,9 +25,9 @@ object Time {
 
   /** Parses a string into a `Time` value.
     *
-    * The input string can be either in the 12h or 24h format. However, input
-    * strings in the 12h format are always converted to the 24h format, that's
-    * the canconcial representation with [[Time]].
+    * The accepted forms are 24-hour `H:MM`/`HH:MM`, 12-hour `H:MM AM`/`HH:MM
+    * PM`, and 12-hour `H AM`/`HH PM`. Input in 12-hour form is converted to
+    * Time's canonical 24-hour representation.
     */
   def parse(str: String): Either[TimeParseError, Time] = str match {
     case rgx_24hClock(hourStr, minuteStr) =>
@@ -149,6 +149,9 @@ object Time {
     }
   }
 
+  /** Adds the `time` interpolator, which parses its completed string at runtime
+    * and throws [[IllegalArgumentException]] when it is invalid.
+    */
   implicit class TimeStringContext(private val sc: StringContext)
       extends AnyVal {
     def time(args: Any*): Time = parse(sc.s(args*))
