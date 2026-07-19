@@ -2,7 +2,7 @@
 > _the **h** stands for **human**-friendly_
 
 [![Scala Version](https://img.shields.io/badge/scala-3.x-DC322F.svg)](https://www.scala-lang.org/)
-[![Maven Central](https://img.shields.io/maven-central/v/com.yourorg/scala-lib_3)](https://search.maven.org/artifact/com.yourorg/scala-lib_3)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.algebrazebra/cronh_3)](https://central.sonatype.com/artifact/io.github.algebrazebra/cronh_3)
 [![Build Status](https://github.com/algebrazebra/cronh/actions/workflows/ci.yml/badge.svg)](https://github.com/algebrazebra/cronh/actions)
 [![Scala Steward badge](https://img.shields.io/badge/Scala_Steward-helping-blue.svg)](https://scala-steward.org)
 

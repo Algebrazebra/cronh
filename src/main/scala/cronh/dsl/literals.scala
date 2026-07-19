@@ -12,8 +12,8 @@ extension (inline value: Int) {
     */
   inline def h: Hour = ${ LiteralMacros.hImpl('value) }
 
-  /** This minute of the hour, validated at compile time: `30.m` compiles,
-    * `60.m` is a compiler error. Requires an integer literal; a non-literal
+  /** This minute of the hour, validated at compile time: `30.min` compiles,
+    * `60.min` is a compiler error. Requires an integer literal; a non-literal
     * reports a tailored message pointing at [[Minute.apply]] for runtime
     * values.
     */

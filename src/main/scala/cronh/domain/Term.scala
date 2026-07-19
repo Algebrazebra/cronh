@@ -6,8 +6,11 @@ package cronh.domain
 sealed trait Term[+A]
 
 object Term {
+
+  /** Matches every value in the field's domain. */
   case object All extends Term[Nothing]
 
+  /** Matches exactly one value. */
   final case class Single[+A](value: A) extends Term[A]
 
   /** An inclusive range `[from, to]`. Construct via [[Range.apply]], which

@@ -1,6 +1,8 @@
 package cronh.domain.fieldTypes
 
-/** A cron month. */
+/** A month in a cron expression, numbered from January (1) through December
+  * (12) when rendered by the built-in dialect.
+  */
 enum Month private (val value: Int) {
   case January extends Month(1)
   case February extends Month(2)

@@ -12,11 +12,14 @@ import cronh.domain.fieldTypes.{Hour, Minute, Month, DayOfMonth}
   * [[CronDialect]] in use (DESIGN.md §2.11).
   */
 trait Render[A] {
+
+  /** Renders `value` as one cron token. */
   def render(value: A): String
 }
 
 object Render {
 
+  /** Retrieves the renderer for `A` from implicit scope. */
   def apply[A](using r: Render[A]): Render[A] = r
 
   given Render[Minute] = _.value.toString

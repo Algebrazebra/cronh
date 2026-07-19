@@ -24,7 +24,7 @@ val Sat: DayOfWeek = DayOfWeek.Saturday
 /** Short alias for Sunday. */
 val Sun: DayOfWeek = DayOfWeek.Sunday
 
-/** Long alias for Monday */
+/** Long alias for Monday. */
 val Mondays: DayOfWeek = DayOfWeek.Monday
 
 /** Long alias for Tuesday. */
@@ -45,8 +45,8 @@ val Saturdays: DayOfWeek = DayOfWeek.Saturday
 /** Long alias for Sunday. */
 val Sundays: DayOfWeek = DayOfWeek.Sunday
 
-/** Monday to Friday (inclusive), e.g., `Schedule.daily.on(Weekdays)`. */
+/** Monday to Friday (inclusive). */
 val Weekdays: DayOfWeekRange = Range[DayOfWeek](from = Mondays, to = Fridays)
 
-/** Saturday and Sunday, e.g., `Schedule.daily.on(Weekends)`. */
+/** Saturday and Sunday. */
 val Weekends: DayOfWeekRange = Range[DayOfWeek](from = Saturdays, to = Sundays)

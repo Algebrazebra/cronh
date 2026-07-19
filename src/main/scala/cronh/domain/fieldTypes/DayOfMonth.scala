@@ -6,7 +6,7 @@ final case class DayOfMonth private (value: Int) derives CanEqual
 object DayOfMonth {
 
   /** Smallest valid day of month. `inline` so it is a compile-time constant
-    * usable from the `15.dom` literal checks, keeping a single source of truth
+    * usable from the `15.th` literal checks, keeping a single source of truth
     * for the bounds.
     */
   inline val MinValue = 1
@@ -14,11 +14,11 @@ object DayOfMonth {
   /** Largest valid day of month. See [[MinValue]]. */
   inline val MaxValue = 31
 
-  /** Smart constructor for MonthDay with runtime validation. */
+  /** Smart constructor with runtime validation. */
   def apply(value: Int): DayOfMonth = {
     require(
       value >= MinValue && value <= MaxValue,
-      s"MonthDay must be between $MinValue and $MaxValue, got $value"
+      s"Day of month must be between $MinValue and $MaxValue, got $value"
     )
     new DayOfMonth(value)
   }

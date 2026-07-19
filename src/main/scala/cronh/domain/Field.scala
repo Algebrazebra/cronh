@@ -13,6 +13,7 @@ import cronh.domain.fieldTypes.DomainBounds
   */
 final case class Field[+A] private (terms: ::[Term[A]]) {
 
+  /** Combines this field with another using cron list semantics. */
   def ++[B >: A](other: Field[B]): Field[B] =
     Field(::(terms.head, terms.tail ::: other.terms))
 }

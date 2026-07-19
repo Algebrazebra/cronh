@@ -156,11 +156,19 @@ object Time {
   }
 }
 
+/** An error returned when [[Time.parse]] cannot interpret its input. */
 sealed trait TimeParseError {
   def message: String
 }
 object TimeParseError {
+
+  /** The hour component is missing, non-numeric, or outside its valid range. */
   final case class InvalidHour(message: String) extends TimeParseError
+
+  /** The minute component is missing, non-numeric, or outside its valid range.
+    */
   final case class InvalidMinute(message: String) extends TimeParseError
+
+  /** The input does not use a supported time format. */
   final case class InvalidTimeFormat(message: String) extends TimeParseError
 }

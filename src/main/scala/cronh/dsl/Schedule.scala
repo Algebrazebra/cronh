@@ -32,21 +32,20 @@ import cronh.dsl.aliases.{Saturdays, Sundays}
   * Schedule.in(January).onThe(1.st)
   * ```
   *
-  * It's possible to select multiple values, pre-defined aliases or ranges:
+  * You can select multiple values, predefined aliases, or inclusive ranges:
   * ```scala
   * Schedule.in(January, February, March).on(Mondays, Tuesdays, Wednesdays)
-  * Schedule.in(January to March).on(Monays to Wednesdays)
+  * Schedule.in(January to March).on(Mondays to Wednesdays)
   * Schedule.in(CQ1).on(Weekdays)
   * Schedule.in(CQ1).on(Weekends)
   * ```
   *
-  * And in case you want to combine weekdays with days of the month, you can.
-  * Just keep in mind, they combine with "OR" and not "AND" as the DSL tries to
-  * make clear:
+  * You can combine days of the week with days of the month. Vixie cron uses OR,
+  * not AND, between these fields; the DSL makes this explicit:
   * ```scala
-  * Schedule.in(June).on(Mondays).orOnThe(15.th
+  * Schedule.in(June).on(Mondays).orOnThe(15.th)
   * Schedule.in(June).onThe(15.th).orOn(Mondays)
-  * ```
+  * ```scala
   *
   * And of course, setting the month is optional:
   * ```
@@ -77,8 +76,8 @@ import cronh.dsl.aliases.{Saturdays, Sundays}
   * Schedule.daily.at(time"09:00")
   * Schedule.daily.at(time"9:00 am")
   *
-  * // or without the string interpolation
-  * Schedule.daily.at(Time(hour=9.h, minute=0.min)
+  * // Or construct Time explicitly.
+  * Schedule.daily.at(Time(hour = 9.h, minute = 0.min))
   *
   * // The examples now complete the schedule, returning CronExpression.
   * // This makes the `toCron` available:
@@ -116,14 +115,16 @@ object Schedule extends MonthSelection, DaySelection {
   protected def cronExpr: CronExpressionBuilder = CronExpressionBuilder.allUnset
 }
 
-/** This trait carries the month-selection methods. */
+/** Adds methods for selecting the month field before selecting a day. */
 trait MonthSelection {
   protected def cronExpr: CronExpressionBuilder
 
+  /** Selects one or more months. */
   def in(m: Month, ms: Month*): MonthChosen = MonthChosen(
     cronExpr.copy(month = Some(Field.of(m, ms: _*)))
   )
 
+  /** Selects an inclusive range of months. */
   def in(ms: MonthRange): MonthChosen = {
     MonthChosen(
       cronExpr.copy(month = Some(ms.toField))
@@ -132,7 +133,7 @@ trait MonthSelection {
 
 }
 
-/** This trait carries the day-selection methods. */
+/** Adds methods for selecting a day recurrence. */
 trait DaySelection {
   protected def cronExpr: CronExpressionBuilder
 
@@ -157,21 +158,23 @@ trait DaySelection {
     cronExpr.copy(dayOfWeek = Some(Field.of(Saturdays, Sundays)))
   )
 
-  /** Configures scheduling for one or many days of the week. */
+  /** Selects one or more days of the week. */
   def on(w: DayOfWeek, ws: DayOfWeek*): DayOfWeekChosen = DayOfWeekChosen(
     cronExpr.copy(dayOfWeek = Some(Field.of(w, ws: _*)))
   )
 
+  /** Selects an inclusive range of days of the week. */
   def on(ws: DayOfWeekRange): DayOfWeekChosen = DayOfWeekChosen(
     cronExpr.copy(dayOfWeek = Some(ws.toField))
   )
 
-  /** Configures scheduling for one or many days of the month. */
+  /** Selects one or more days of the month. */
   def onThe(d: DayOfMonth, ds: DayOfMonth*): DayOfMonthChosen =
     DayOfMonthChosen(
       cronExpr.copy(dayOfMonth = Some(Field.of(d, ds: _*)))
     )
 
+  /** Selects an inclusive range of days of the month. */
   def onThe(ds: DayOfMonthRange): DayOfMonthChosen =
     DayOfMonthChosen(
       cronExpr.copy(dayOfMonth = Some(ds.toField))
@@ -180,10 +183,17 @@ trait DaySelection {
 
 final class DayOfWeekChosen(cronExpr: CronExpressionBuilder)
     extends TimePhase(cronExpr) {
+
+  /** Also selects one or more days of the month.
+    *
+    * A schedule runs when either the selected weekday or selected day of the
+    * month matches, following Vixie cron semantics.
+    */
   def orOnThe(d: DayOfMonth, ds: DayOfMonth*): TimePhase = TimePhase(
     cronExpr.copy(dayOfMonth = Some(Field.of(d, ds: _*)))
   )
 
+  /** Also selects an inclusive range of days of the month; see [[orOnThe]]. */
   def orOnThe(ds: DayOfMonthRange): TimePhase = TimePhase(
     cronExpr.copy(dayOfMonth = Some(ds.toField))
   )
@@ -191,21 +201,29 @@ final class DayOfWeekChosen(cronExpr: CronExpressionBuilder)
 
 final class DayOfMonthChosen(cronExpr: CronExpressionBuilder)
     extends TimePhase(cronExpr) {
+
+  /** Also selects one or more days of the week.
+    *
+    * A schedule runs when either the selected day of the month or selected
+    * weekday matches, following Vixie cron semantics.
+    */
   def orOn(w: DayOfWeek, ws: DayOfWeek*): TimePhase = TimePhase(
     cronExpr.copy(dayOfWeek = Some(Field.of(w, ws: _*)))
   )
+
+  /** Also selects an inclusive range of days of the week; see [[orOn]]. */
   def orOn(ws: DayOfWeekRange): TimePhase = TimePhase(
     cronExpr.copy(dayOfWeek = Some(ws.toField))
   )
 }
 
-/** Represents that the user set the month of the cron expression. */
+/** Intermediate DSL state after a month has been selected. */
 final class MonthChosen(protected val base: CronExpressionBuilder)
     extends DaySelection {
   protected def cronExpr: CronExpressionBuilder = base
 }
 
-/** This trait carries the minute-selection methods. */
+/** Adds terminal methods for selecting minute marks. */
 trait MinuteSelection {
   protected def cronExpr: CronExpressionBuilder
 
@@ -213,7 +231,7 @@ trait MinuteSelection {
   def everyMinute: CronExpression =
     cronExpr.copy(minute = Some(Field.all)).build()
 
-  /** Configures the scheduling in an interval of the given minutes.
+  /** Selects minute marks at the given field interval, starting at minute zero.
     *
     * **Footgun alert!** Cron cannot actually schedule something every X minutes
     * if X is not a divisor of 60. For example, scheduling every 25 minutes
@@ -234,18 +252,19 @@ trait MinuteSelection {
   }
 }
 
-/** Represents that the user set the hour of the cron expression. */
+/** Intermediate DSL state after one or more hours have been selected. */
 final class HourChosen(protected val base: CronExpressionBuilder)
     extends MinuteSelection {
   protected def cronExpr: CronExpressionBuilder = base
 
-  /** Configures the scheduling for the given minute marks. */
+  /** Selects one or more minute marks and completes the schedule. */
   def at(m: Minute, ms: Minute*): CronExpression = cronExpr
     .copy(
       minute = Some(Field.of(m, ms: _*))
     )
     .build()
 
+  /** Selects an inclusive range of minute marks and completes the schedule. */
   def at(ms: MinuteRange): CronExpression = cronExpr
     .copy(
       minute = Some(ms.toField)
@@ -272,7 +291,7 @@ class TimePhase(protected val cronExpr: CronExpressionBuilder)
     * ```scala
     * Schedule.daily.at(time"13:30")
     * Schedule.daily.at(time"1:30 pm")
-    * Schedule.daily.at(Time(hour = 13, minute = 30))
+    * Schedule.daily.at(Time(hour = 13.h, minute = 30.min))
     * ```
     *
     * Due to the nature of cron, setting multiple times like this in a single
@@ -288,16 +307,18 @@ class TimePhase(protected val cronExpr: CronExpressionBuilder)
       .build()
   }
 
+  /** Selects one or more hours. Call `at` again to select minute marks. */
   def at(h: Hour, hs: Hour*): HourChosen = HourChosen(
     cronExpr
       .copy(hour = Some(Field.of(h, hs: _*)))
   )
 
+  /** Selects an inclusive range of hours. Call `at` again to select minutes. */
   def at(hs: HourRange): HourChosen = HourChosen(
     cronExpr.copy(hour = Some(hs.toField))
   )
 
-  /** Configures the scheduling for the given range of hours.
+  /** Selects hours from `startInclusive` up to, but excluding, `endExclusive`.
     *
     * Note that the end hour is exclusive! For example, scheduling
     * `.between(9.h, 17.h).at(0.min)` will not fire at 17:00. This method is a

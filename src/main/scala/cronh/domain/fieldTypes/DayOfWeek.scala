@@ -1,6 +1,6 @@
 package cronh.domain.fieldTypes
 
-/** A cron week day.
+/** A day of the week in a cron expression.
   *
   * The numeric rendering of each day is dialect-specific and therefore lives in
   * the dialect renderer, not here.
