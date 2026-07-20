@@ -26,6 +26,11 @@ import cronh.domain.fieldTypes.{
   * [[Ordering]] instance.
   */
 case class Range[T: Ordering](from: T, to: T) {
+  require(
+    Ordering[T].lteq(from, to),
+    "Start of an inclusive range must be less than or equal to its end."
+  )
+
   private[dsl] def toField: Field[T] = Field.range(from, to)
 }
 

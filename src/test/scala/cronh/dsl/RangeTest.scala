@@ -5,6 +5,21 @@ import munit.FunSuite
 
 class RangeTest extends FunSuite {
 
+  test("to accepts a range with equal endpoints") {
+    assertEquals(Hour(9) to Hour(9), Range(Hour(9), Hour(9)))
+  }
+
+  test("to rejects a descending range when it is constructed") {
+    val error = intercept[IllegalArgumentException] {
+      Hour(17) to Hour(9)
+    }
+
+    assertEquals(
+      error.getMessage,
+      "requirement failed: Start of an inclusive range must be less than or equal to its end."
+    )
+  }
+
   test("until converts exclusive ends for every cron field type") {
     assertEquals(
       Month.January until Month.April,
