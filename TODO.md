@@ -1,66 +1,6 @@
-- Rework the tests to focus on behavior
-- Undefined cron expressions (`*,1`, overlapping ranges, etc.) — RESOLVED, see DESIGN.md §4 (Edge-Case Handling).
-  - Baseline is Vixie, which has no formal standard; behavior is implementation-defined.
-  - `*,1` is *not* illegal under Vixie — a field is the OR of its elements, so a field containing `*` denotes everything. It is accepted and normalized to `Field.all` (DESIGN §4.4).
-  - Overlapping ranges are redundant, not illegal — accepted as written, canonicalized by Phase 6 `normalized`.
-- FreshCron rename
-- readme redo
-  - document OR decision to be compatible with Vixie and Quartz
-
-DSL possibilities
-
-
-Defaults:
-- daily --> only time (min, hour) via `at` or `between`
-- weekdays --> time (min, hour) --> (Months?)
-- weekends --||--
-- on(DOW) --||--
-
-- in(June, Dec).on(1, 3, 15)
-- monthly.on(1, 3, 15) --> time (at or between)
-  vs.- on(1,3,15).in(June)
-
-Have short form weekdays and long form (Mon, Monday)
-Have short form months and long form (Jan, January)
-
-
-Test wraparound for ranges like MonthRange, etc.
-Implement it in the Range class; NOT IN DOMAIN!!!
-
 Feature: except syntax
 Except syntax on ranges: Monday to Friday except (Wednesday, Thursday)
 All except Monday
 
-
-Make sure that with import cronh.dsl.* everything is in scope: range syntax, aliases, literals, etc.
-
-
-Have an LLM go through all the scaladoc and check it for improvements and natural soundingness and clarity.
-
-
-In Schedule: how can I rename Hour and Minute to HourMark and MinuteMark? This is more descriptive and could 
-add the abstraction layer of the domain types.
-
-
-
-// 6. ranges: for month, weekdays and month days incl. wraparound
-//    check they are inclusive and covering
-// TODO: test wrap around ranges. For months: Now to March --> 11-12, 1-3
-
-
-// The tests should test created cron schedules against the string
-// The following time cases should be tested with holding the day cases constant: daily
-// 4. Setting time with multiple .h and multiple .min
-// 5. Every minute is available (both immediately and after setting hours)
-
-// Test Day ranges: one, many, day range -->  what happens with a wraparound?
-// TODO: Document: from 15th june to 15th of august is NOT possible in cron
-// Test Day selection: when setting the 15th, it's possible to select a weekday after
-// Test Day selection can be skipped
-
-
-
-// Test Day ranges: one, many, day range -->  what happens with a wraparound?
-// TODO: Document: from 15th june to 15th of august is NOT possible in cron
-// Test Day selection: when setting the 15th, it's possible to select a weekday after
-
+Publishing the lib
+Registering with scaladex
