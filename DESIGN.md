@@ -44,8 +44,9 @@ DSL requires that relationship to be written explicitly with `orOn` or
 
 Integer literals such as `9.h`, `30.min`, and `15.th` are checked by macros.
 `time"..."` validates constant strings at compile time and interpolated strings
-at runtime. Range syntax is inclusive; `between(start, end)` is the explicitly
-exclusive-end exception.
+at runtime. Range syntax supports inclusive `to` and exclusive-end `until`;
+`between(start, end)` is the named equivalent for hour ranges. Both range forms
+require ascending endpoints and never wrap around a field boundary.
 
 Cron fields describe sets, not elapsed durations. Interval helpers therefore
 expand to concrete minute or hour marks anchored at the beginning of their
@@ -80,6 +81,26 @@ The following choices explain the less obvious parts of the implementation.
 | Split Unix weekday ranges that end on Sunday | Render Sunday as both `0` and `7`, or reject those ranges in the domain | Preserves one Unix encoding for Sunday while keeping valid calendar ranges representable. |
 | Expand interval helpers to concrete field marks | Add step terms or a generic `every(hours)` API | Reflects the field-anchored behavior cron can actually express and avoids implying arbitrary elapsed-time intervals. |
 | Keep the core dependency-free | Depend on Cats for abstractions such as `Semigroup` | The small domain model does not justify a production dependency. |
+
+### Retired: wrapping ranges
+
+Wrapping ranges were considered for every finite cron domain, with descending
+endpoints crossing the domain boundary: for example, Friday through Monday,
+December through March, or hour 22 through hour 2. The implementation could
+split such a selection into two ordinary ranges, but that representation would
+make the DSL look more interval-oriented than cron actually is.
+
+Cron evaluates its fields independently and combines their selected values as a
+cross-product. Consequently, wrapping both hours and minutes would not describe
+one continuous wall-clock interval, and wrapping days of the month would select
+nominal dates independently in every month despite differing month lengths.
+Weekday and month wrapping can be read naturally in isolation, but supporting
+it only for those fields would make range behavior inconsistent across the DSL.
+
+The DSL therefore rejects descending endpoints for every field type. This also
+keeps accidentally reversed endpoints from silently becoming a much broader
+schedule. Callers who intend a boundary-spanning selection can list its values
+explicitly, making the underlying set semantics visible at the call site.
 
 ## Boundaries
 

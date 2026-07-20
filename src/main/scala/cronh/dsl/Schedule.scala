@@ -325,16 +325,8 @@ class TimePhase(protected val cronExpr: CronExpressionBuilder)
     * `.at(9.h until 17.h)`. This is in contrast to the alternative range syntax
     * `.at(9.h to 17.h)` which is inclusive!
     */
-  def between(startInclusive: Hour, endExclusive: Hour): HourChosen = {
-    if (startInclusive == endExclusive) {
-      throw IllegalArgumentException(
-        "The start and end of the range defined by `.between` must not be same."
-      )
-    }
-    // TODO: replace inclusive range with exclusive, i.e. `until` when it's implemented
-    val equivalentInclusiveEnd = Hour(endExclusive.value - 1)
-    at(Range[Hour](from = startInclusive, to = equivalentInclusiveEnd))
-  }
+  def between(startInclusive: Hour, endExclusive: Hour): HourChosen =
+    at(startInclusive until endExclusive)
 
   // Not offering a `every(hours: Hour)` method similar to `every(minutes: Minute)` is a deliberate choice.
   // The problem with this method would be that it allows continuing with all methods of `HourChosen` which

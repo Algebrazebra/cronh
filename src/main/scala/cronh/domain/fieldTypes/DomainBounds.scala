@@ -17,4 +17,10 @@ trait DomainBounds[A] {
     * rebuild it on every call.
     */
   lazy val indexOf: Map[A, Int] = domain.zipWithIndex.toMap
+
+  /** Returns the value immediately before `value` in this domain, or [[None]]
+    * when `value` is the first value or is not part of the domain.
+    */
+  final def predecessor(value: A): Option[A] =
+    indexOf.get(value).flatMap(index => domain.lift(index - 1))
 }
