@@ -18,24 +18,32 @@ class RangeTest extends FunSuite {
 
     assertEquals(
       error.getMessage,
-      "requirement failed: Start of an inclusive range must be less than or equal to its end."
+      "Invalid inclusive range `Hour(17) to Hour(9)`: the start `Hour(17)` " +
+        "is after the end `Hour(9)`. Descending ranges are not supported; " +
+        "put the earlier value first or list boundary-spanning values " +
+        "explicitly."
     )
   }
 
   test("to rejects descending literal ranges at compile time") {
     val errors = List(
-      compileErrors("Month.December to Month.January"),
-      compileErrors("DayOfWeek.Sunday to DayOfWeek.Monday"),
-      compileErrors("31.st to 1.st"),
-      compileErrors("17.h to 9.h"),
-      compileErrors("59.min to 0.min")
+      "Month.December to Month.January" -> compileErrors(
+        "Month.December to Month.January"
+      ),
+      "DayOfWeek.Sunday to DayOfWeek.Monday" -> compileErrors(
+        "DayOfWeek.Sunday to DayOfWeek.Monday"
+      ),
+      "31.st to 1.st" -> compileErrors("31.st to 1.st"),
+      "17.h to 9.h" -> compileErrors("17.h to 9.h"),
+      "59.min to 0.min" -> compileErrors("59.min to 0.min")
     )
 
-    errors.foreach { error =>
+    errors.foreach { case (range, error) =>
       assert(
-        error.contains(
-          "Start of an inclusive"
-        ) && error.contains("range must be less than or equal to its end"),
+        error.contains(s"range `$range`") &&
+          error.contains("the start") &&
+          error.contains("is after the end") &&
+          error.contains("Descending ranges are not supported"),
         error
       )
     }
@@ -75,32 +83,58 @@ class RangeTest extends FunSuite {
 
     assertEquals(
       error.getMessage,
-      "requirement failed: Start of an exclusive range must be less than its end."
+      "Invalid exclusive range `Hour(9) until Hour(9)`: this range is empty " +
+        "because `until` excludes `Hour(9)`. Use `Hour(9) to Hour(9)` to " +
+        "select that single value, or choose a later exclusive end."
     )
   }
 
   test("until rejects a descending range") {
     val start = Hour(17)
     val end = Hour(9)
-    intercept[IllegalArgumentException] {
+    val error = intercept[IllegalArgumentException] {
       start until end
     }
+
+    assertEquals(
+      error.getMessage,
+      "Invalid exclusive range `Hour(17) until Hour(9)`: the start `Hour(17)` " +
+        "is after the exclusive end `Hour(9)`. Descending ranges are not " +
+        "supported; put the earlier value first or list boundary-spanning " +
+        "values explicitly."
+    )
   }
 
   test("until rejects empty and descending literal ranges at compile time") {
-    val errors = List(
-      compileErrors("Month.April until Month.April"),
-      compileErrors("DayOfWeek.Friday until DayOfWeek.Monday"),
-      compileErrors("4.th until 4.th"),
-      compileErrors("17.h until 9.h"),
-      compileErrors("30.min until 0.min")
+    val emptyErrors = List(
+      "Month.April until Month.April" -> compileErrors(
+        "Month.April until Month.April"
+      ),
+      "4.th until 4.th" -> compileErrors("4.th until 4.th")
     )
 
-    errors.foreach { error =>
+    emptyErrors.foreach { case (range, error) =>
       assert(
-        error.contains(
-          "Start of an exclusive"
-        ) && error.contains("range must be less than its end"),
+        error.contains(s"range `$range`") &&
+          error.contains("this range is empty") &&
+          error.contains("to select that single value"),
+        error
+      )
+    }
+
+    val descendingErrors = List(
+      "DayOfWeek.Friday until DayOfWeek.Monday" -> compileErrors(
+        "DayOfWeek.Friday until DayOfWeek.Monday"
+      ),
+      "17.h until 9.h" -> compileErrors("17.h until 9.h"),
+      "30.min until 0.min" -> compileErrors("30.min until 0.min")
+    )
+
+    descendingErrors.foreach { case (range, error) =>
+      assert(
+        error.contains(s"range `$range`") &&
+          error.contains("is after the exclusive end") &&
+          error.contains("Descending ranges are not supported"),
         error
       )
     }
