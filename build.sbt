@@ -4,8 +4,6 @@ ThisBuild / scalaVersion := "3.3.7"
 
 ThisBuild / tpolecatDefaultOptionsMode := org.typelevel.sbt.tpolecat.DevMode
 
-// JGit does not support all linked-worktree layouts; use the Git CLI instead.
-useReadableConsoleGit
 
 /** Maven Central publishing metadata
   */
