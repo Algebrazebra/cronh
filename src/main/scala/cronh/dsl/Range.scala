@@ -26,10 +26,12 @@ import cronh.domain.fieldTypes.{
   * [[Ordering]] instance.
   */
 case class Range[T: Ordering](from: T, to: T) {
-  require(
-    Ordering[T].lteq(from, to),
-    "Start of an inclusive range must be less than or equal to its end."
-  )
+  if !Ordering[T].lteq(from, to) then
+    throw IllegalArgumentException(
+      s"Invalid inclusive range `$from to $to`: the start `$from` is after " +
+        s"the end `$to`. Descending ranges are not supported; put the " +
+        "earlier value first or list boundary-spanning values explicitly."
+    )
 
   private[dsl] def toField: Field[T] = Field.range(from, to)
 }
@@ -42,10 +44,21 @@ object Range:
       from: T,
       endExclusive: T
   ): Range[T] =
-    require(
-      Ordering[T].lt(from, endExclusive),
-      "Start of an exclusive range must be less than its end."
-    )
+    val ordering = Ordering[T]
+    if !ordering.lt(from, endExclusive) then
+      val message =
+        if ordering.equiv(from, endExclusive) then
+          s"Invalid exclusive range `$from until $endExclusive`: this range " +
+            s"is empty because `until` excludes `$endExclusive`. Use " +
+            s"`$from to $endExclusive` to select that single value, or " +
+            "choose a later exclusive end."
+        else
+          s"Invalid exclusive range `$from until $endExclusive`: the start " +
+            s"`$from` is after the exclusive end `$endExclusive`. Descending " +
+            "ranges are not supported; put the earlier value first or list " +
+            "boundary-spanning values explicitly."
+
+      throw IllegalArgumentException(message)
 
     val inclusiveEnd =
       summon[DomainBounds[T]].predecessor(endExclusive).getOrElse {
