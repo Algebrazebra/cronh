@@ -24,7 +24,7 @@ ThisBuild / developers := List(
     url = url("https://github.com/Algebrazebra")
   )
 )
-ThisBuild / description := "A Scala 3 library for defining and rendering human-readable cron schedules."
+ThisBuild / description := "A Scala 3 library for defining human-readable cron schedules."
 ThisBuild / licenses := List(License.Apache2)
 ThisBuild / pomIncludeRepository := { _ => false }
 
