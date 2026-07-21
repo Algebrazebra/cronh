@@ -1,9 +1,7 @@
 /** Build settings
   */
-ThisBuild / scalaVersion := "3.3.7"
-
+ThisBuild / scalaVersion := "3.3.8"
 ThisBuild / tpolecatDefaultOptionsMode := org.typelevel.sbt.tpolecat.DevMode
-
 
 /** Maven Central publishing metadata
   */
@@ -17,6 +15,7 @@ ThisBuild / scmInfo := Some(
     "scm:git:https://github.com/Algebrazebra/cronh.git"
   )
 )
+ThisBuild / versionScheme := Some("early-semver")
 ThisBuild / developers := List(
   Developer(
     id = "algebrazebra",
@@ -27,6 +26,7 @@ ThisBuild / developers := List(
 )
 ThisBuild / description := "A Scala 3 library for defining and rendering human-readable cron schedules."
 ThisBuild / licenses := List(License.Apache2)
+ThisBuild / pomIncludeRepository := { _ => false }
 
 /** GitHub Actions CI/CD workflow settings
   *
