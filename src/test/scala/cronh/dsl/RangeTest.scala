@@ -10,14 +10,43 @@ class RangeTest extends FunSuite {
   }
 
   test("to rejects a descending range when it is constructed") {
+    val start = Hour(17)
+    val end = Hour(9)
     val error = intercept[IllegalArgumentException] {
-      Hour(17) to Hour(9)
+      start to end
     }
 
     assertEquals(
       error.getMessage,
       "requirement failed: Start of an inclusive range must be less than or equal to its end."
     )
+  }
+
+  test("to rejects descending literal ranges at compile time") {
+    val errors = List(
+      compileErrors("Month.December to Month.January"),
+      compileErrors("DayOfWeek.Sunday to DayOfWeek.Monday"),
+      compileErrors("31.st to 1.st"),
+      compileErrors("17.h to 9.h"),
+      compileErrors("59.min to 0.min")
+    )
+
+    errors.foreach { error =>
+      assert(
+        error.contains(
+          "Start of an inclusive"
+        ) && error.contains("range must be less than or equal to its end"),
+        error
+      )
+    }
+  }
+
+  test("to accepts literal ranges with ascending or equal endpoints") {
+    assertEquals(compileErrors("Month.January to Month.December"), "")
+    assertEquals(compileErrors("DayOfWeek.Monday to DayOfWeek.Sunday"), "")
+    assertEquals(compileErrors("1.st to 31.st"), "")
+    assertEquals(compileErrors("9.h to 9.h"), "")
+    assertEquals(compileErrors("0.min to 59.min"), "")
   }
 
   test("until converts exclusive ends for every cron field type") {
@@ -51,6 +80,16 @@ class RangeTest extends FunSuite {
   test("until rejects a descending range") {
     intercept[IllegalArgumentException] {
       Hour(17) until Hour(9)
+    }
+  }
+
+  test(
+    "a mixed literal and dynamic inclusive range falls back to runtime validation"
+  ) {
+    val end = Hour(9)
+
+    intercept[IllegalArgumentException] {
+      17.h to end
     }
   }
 }

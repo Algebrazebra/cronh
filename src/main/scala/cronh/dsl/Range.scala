@@ -81,22 +81,41 @@ object Ranging:
   given [T](using Ordering[T]): Ranging[T] with
     extension (from: T) infix def to(to: T): Range[T] = Range(from, to)
 
-/** Creates an inclusive range of months. */
-extension (from: Month) infix def to(to: Month): MonthRange = Range(from, to)
+/** Creates an inclusive range of months. Literal endpoints are validated at
+  * compile time; dynamic endpoints retain the runtime validation performed by
+  * [[Range]].
+  */
+extension (inline from: Month)
+  inline infix def to(inline to: Month): MonthRange =
+    ${ RangeMacros.inclusiveMonth('from, 'to) }
 
-/** Creates an inclusive range of days of the week. */
-extension (from: DayOfWeek)
-  infix def to(to: DayOfWeek): DayOfWeekRange = Range(from, to)
+/** Creates an inclusive range of days of the week. Literal endpoints are
+  * validated at compile time; dynamic endpoints retain runtime validation.
+  */
+extension (inline from: DayOfWeek)
+  inline infix def to(inline to: DayOfWeek): DayOfWeekRange =
+    ${ RangeMacros.inclusiveDayOfWeek('from, 'to) }
 
-/** Creates an inclusive range of days of the month. */
-extension (from: DayOfMonth)
-  infix def to(to: DayOfMonth): DayOfMonthRange = Range(from, to)
+/** Creates an inclusive range of days of the month. Literal endpoints are
+  * validated at compile time; dynamic endpoints retain runtime validation.
+  */
+extension (inline from: DayOfMonth)
+  inline infix def to(inline to: DayOfMonth): DayOfMonthRange =
+    ${ RangeMacros.inclusiveDayOfMonth('from, 'to) }
 
-/** Creates an inclusive range of hours. */
-extension (from: Hour) infix def to(to: Hour): HourRange = Range(from, to)
+/** Creates an inclusive range of hours. Literal endpoints are validated at
+  * compile time; dynamic endpoints retain runtime validation.
+  */
+extension (inline from: Hour)
+  inline infix def to(inline to: Hour): HourRange =
+    ${ RangeMacros.inclusiveHour('from, 'to) }
 
-/** Creates an inclusive range of minutes. */
-extension (from: Minute) infix def to(to: Minute): MinuteRange = Range(from, to)
+/** Creates an inclusive range of minutes. Literal endpoints are validated at
+  * compile time; dynamic endpoints retain runtime validation.
+  */
+extension (inline from: Minute)
+  inline infix def to(inline to: Minute): MinuteRange =
+    ${ RangeMacros.inclusiveMinute('from, 'to) }
 
 /** Creates an exclusive-end range of months. */
 extension (from: Month)
