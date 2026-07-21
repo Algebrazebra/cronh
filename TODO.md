@@ -6,7 +6,6 @@
 - https://github.com/VirtusLab/scala-steward-repos/pull/676 after the https://github.com/scala-steward-org/scala-steward/issues/3945
 - Fix Scaladoc linker warnings in ci-release action
 - Update example schedules in examples/
-- 
 
 ## Features
 - Detection of non-existing days (i.e. `31` in `April` and `30` in `February`).
