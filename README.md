@@ -121,3 +121,23 @@ sbt ci            # exactly what GitHub Actions runs
 sbt scalafmtAll   # format
 ```
 
+### Releasing
+
+Before the first release, verify the `io.github.algebrazebra` namespace in the
+[Maven Central Portal](https://central.sonatype.com/) and add these GitHub
+Actions repository secrets:
+
+- `SONATYPE_USERNAME` and `SONATYPE_PASSWORD`: a Central Portal user token
+- `PGP_SECRET`: the base64-encoded private signing key
+- `PGP_PASSPHRASE`: the signing key's passphrase
+
+Publish the public signing key to a keyserver, then create and push an annotated
+tag whose name starts with `v`:
+
+```sh
+git tag -a v0.1.0 -m "v0.1.0"
+git push origin v0.1.0
+```
+
+The generated GitHub Actions workflow runs the full build before publishing the
+tagged version to Maven Central.

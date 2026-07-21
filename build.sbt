@@ -1,8 +1,32 @@
 /** Build settings
   */
-ThisBuild / scalaVersion := "3.3.7"
-
+ThisBuild / scalaVersion := "3.3.8"
 ThisBuild / tpolecatDefaultOptionsMode := org.typelevel.sbt.tpolecat.DevMode
+
+/** Maven Central publishing metadata
+  */
+ThisBuild / organization := "io.github.algebrazebra"
+ThisBuild / organizationName := "Algebrazebra"
+ThisBuild / organizationHomepage := Some(url("https://github.com/Algebrazebra"))
+ThisBuild / homepage := Some(url("https://github.com/Algebrazebra/cronh"))
+ThisBuild / scmInfo := Some(
+  ScmInfo(
+    url("https://github.com/Algebrazebra/cronh"),
+    "scm:git:https://github.com/Algebrazebra/cronh.git"
+  )
+)
+ThisBuild / versionScheme := Some("early-semver")
+ThisBuild / developers := List(
+  Developer(
+    id = "algebrazebra",
+    name = "Algebrazebra",
+    email = "Algebrazebra@users.noreply.github.com",
+    url = url("https://github.com/Algebrazebra")
+  )
+)
+ThisBuild / description := "A Scala 3 library for defining human-readable cron schedules."
+ThisBuild / licenses := List(License.Apache2)
+ThisBuild / pomIncludeRepository := { _ => false }
 
 /** GitHub Actions CI/CD workflow settings
   *
@@ -13,7 +37,23 @@ ThisBuild / tpolecatDefaultOptionsMode := org.typelevel.sbt.tpolecat.DevMode
 
 ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("11"))
 
-ThisBuild / githubWorkflowPublishTargetBranches := Seq()
+ThisBuild / githubWorkflowTargetTags ++= Seq("v*")
+
+ThisBuild / githubWorkflowPublishTargetBranches :=
+  Seq(RefPredicate.StartsWith(Ref.Tag("v")))
+
+ThisBuild / githubWorkflowPublish := Seq(
+  WorkflowStep.Sbt(
+    commands = List("ci-release"),
+    name = Some("Publish to Maven Central"),
+    env = Map(
+      "PGP_PASSPHRASE" -> "${{ secrets.PGP_PASSPHRASE }}",
+      "PGP_SECRET" -> "${{ secrets.PGP_SECRET }}",
+      "SONATYPE_PASSWORD" -> "${{ secrets.SONATYPE_PASSWORD }}",
+      "SONATYPE_USERNAME" -> "${{ secrets.SONATYPE_USERNAME }}"
+    )
+  )
+)
 
 ThisBuild / githubWorkflowBuild := Seq(
   WorkflowStep.Sbt(
@@ -54,7 +94,7 @@ ci := {
 lazy val mainDependencies: Seq[ModuleID] = Seq()
 
 lazy val testDependencies: Seq[ModuleID] = Seq(
-  "org.scalameta" %% "munit" % "1.3.2",
+  "org.scalameta" %% "munit" % "1.3.4",
   "org.scalameta" %% "munit-scalacheck" % "1.3.0"
 ).map(_ % Test)
 
@@ -67,8 +107,6 @@ lazy val rootProject = (project in file("."))
   .settings(
     Seq(
       name := "cronh",
-      version := "0.0.0",
-      organization := "io.github.algebrazebra",
       libraryDependencies ++= mainDependencies ++ testDependencies
     )
   )
