@@ -71,6 +71,10 @@ Schedule.onThe(1.th).at(time"9:00")   // it's 1.st, not 1.th
 Schedule.daily.at(100.h, 61.h).at(-1.min, 61.min) // Not valid hours and minutes
 ```
 
+Literal range endpoints are also ordered at compile time: `17.h to 9.h` and
+`9.h until 9.h` do not compile. When either endpoint is dynamically provided,
+the same ordering rules are validated at runtime.
+
 Of course, the same checks are also made at runtime when compile time checking isn't possible.
 For example, when inserting values dynamically instead of using literals.
 
