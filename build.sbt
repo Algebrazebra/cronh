@@ -94,7 +94,7 @@ ci := {
 lazy val mainDependencies: Seq[ModuleID] = Seq()
 
 lazy val testDependencies: Seq[ModuleID] = Seq(
-  "org.scalameta" %% "munit" % "1.3.2",
+  "org.scalameta" %% "munit" % "1.3.4",
   "org.scalameta" %% "munit-scalacheck" % "1.3.0"
 ).map(_ % Test)
 
