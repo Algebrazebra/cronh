@@ -44,7 +44,7 @@ ThisBuild / githubWorkflowPublishTargetBranches :=
 
 ThisBuild / githubWorkflowPublish := Seq(
   WorkflowStep.Sbt(
-    commands = List("ci-release"),
+    commands = List("tpolecatReleaseMode", "ci-release"),
     name = Some("Publish to Maven Central"),
     env = Map(
       "PGP_PASSPHRASE" -> "${{ secrets.PGP_PASSPHRASE }}",
