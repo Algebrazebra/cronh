@@ -1,4 +1,4 @@
-package cronh.dsl
+package consumer
 
 // DO NOT import any project files other than `import cronh.dsl.*`
 // ONLY non-project imports (e.g., test library imports) are allowed.
