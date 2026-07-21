@@ -28,9 +28,11 @@ This library currently **targets Vixie cron**, arguably the most common cron imp
 
 ## Quick start
 
-Install the library by adding it to your `build.sbt`:
+Install the library by adding it to your `build.sbt` and specifiying the version.
+You can find all the versions on [Sonatype](https://central.sonatype.com/artifact/io.github.algebrazebra/cronh_3).
+
 ```build.sbt
-libraryDependencies += "io.github.algebrazebra" %% "cronh" % "<insert latest version>"
+libraryDependencies += "io.github.algebrazebra" % "cronh_3" % "<VERSION>"
 ```
 
 Then using it is quite straightforward:
