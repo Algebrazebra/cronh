@@ -1,6 +1,6 @@
 package consumer
 
-import cronh.domain.fieldTypes.Month
+import cronh.domain.fieldTypes.{DayOfWeek, Month}
 import cronh.dsl.*
 import munit.FunSuite
 
@@ -14,5 +14,10 @@ class RangeSyntaxCompileTest extends FunSuite {
       Month.January to Month.March,
       Range(Month.January, Month.March)
     )
+    assertEquals(
+      DayOfWeek.Monday until DayOfWeek.Friday,
+      Range(DayOfWeek.Monday, DayOfWeek.Thursday)
+    )
+    assertEquals(9.h until 17.h, Range(9.h, 16.h))
   }
 }

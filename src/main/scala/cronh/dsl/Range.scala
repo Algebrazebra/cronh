@@ -117,27 +117,39 @@ extension (inline from: Minute)
   inline infix def to(inline to: Minute): MinuteRange =
     ${ RangeMacros.inclusiveMinute('from, 'to) }
 
-/** Creates an exclusive-end range of months. */
-extension (from: Month)
-  infix def until(endExclusive: Month): MonthRange =
-    Range.exclusive(from, endExclusive)
+/** Creates an exclusive-end range of months, with compile-time validation for
+  * literal endpoints and runtime validation for dynamic endpoints.
+  */
+extension (inline from: Month)
+  inline infix def until(inline endExclusive: Month): MonthRange =
+    ${ RangeMacros.exclusiveMonth('from, 'endExclusive) }
 
-/** Creates an exclusive-end range of days of the week. */
-extension (from: DayOfWeek)
-  infix def until(endExclusive: DayOfWeek): DayOfWeekRange =
-    Range.exclusive(from, endExclusive)
+/** Creates an exclusive-end range of days of the week, with compile-time
+  * validation for literal endpoints and runtime validation for dynamic
+  * endpoints.
+  */
+extension (inline from: DayOfWeek)
+  inline infix def until(inline endExclusive: DayOfWeek): DayOfWeekRange =
+    ${ RangeMacros.exclusiveDayOfWeek('from, 'endExclusive) }
 
-/** Creates an exclusive-end range of days of the month. */
-extension (from: DayOfMonth)
-  infix def until(endExclusive: DayOfMonth): DayOfMonthRange =
-    Range.exclusive(from, endExclusive)
+/** Creates an exclusive-end range of days of the month, with compile-time
+  * validation for literal endpoints and runtime validation for dynamic
+  * endpoints.
+  */
+extension (inline from: DayOfMonth)
+  inline infix def until(inline endExclusive: DayOfMonth): DayOfMonthRange =
+    ${ RangeMacros.exclusiveDayOfMonth('from, 'endExclusive) }
 
-/** Creates an exclusive-end range of hours. */
-extension (from: Hour)
-  infix def until(endExclusive: Hour): HourRange =
-    Range.exclusive(from, endExclusive)
+/** Creates an exclusive-end range of hours, with compile-time validation for
+  * literal endpoints and runtime validation for dynamic endpoints.
+  */
+extension (inline from: Hour)
+  inline infix def until(inline endExclusive: Hour): HourRange =
+    ${ RangeMacros.exclusiveHour('from, 'endExclusive) }
 
-/** Creates an exclusive-end range of minutes. */
-extension (from: Minute)
-  infix def until(endExclusive: Minute): MinuteRange =
-    Range.exclusive(from, endExclusive)
+/** Creates an exclusive-end range of minutes, with compile-time validation for
+  * literal endpoints and runtime validation for dynamic endpoints.
+  */
+extension (inline from: Minute)
+  inline infix def until(inline endExclusive: Minute): MinuteRange =
+    ${ RangeMacros.exclusiveMinute('from, 'endExclusive) }

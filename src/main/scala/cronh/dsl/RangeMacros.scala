@@ -41,6 +41,43 @@ private object RangeMacros {
   ): Expr[MinuteRange] =
     inclusive(from, to, minuteRank, "minute")('{ Range($from, $to) })
 
+  def exclusiveMonth(from: Expr[Month], endExclusive: Expr[Month])(using
+      Quotes
+  ): Expr[MonthRange] =
+    exclusive(from, endExclusive, monthRank, "month")(
+      '{ Range.exclusive($from, $endExclusive) }
+    )
+
+  def exclusiveDayOfWeek(
+      from: Expr[DayOfWeek],
+      endExclusive: Expr[DayOfWeek]
+  )(using Quotes): Expr[DayOfWeekRange] =
+    exclusive(from, endExclusive, dayOfWeekRank, "day-of-week")(
+      '{ Range.exclusive($from, $endExclusive) }
+    )
+
+  def exclusiveDayOfMonth(
+      from: Expr[DayOfMonth],
+      endExclusive: Expr[DayOfMonth]
+  )(using Quotes): Expr[DayOfMonthRange] =
+    exclusive(from, endExclusive, dayOfMonthRank, "day-of-month")(
+      '{ Range.exclusive($from, $endExclusive) }
+    )
+
+  def exclusiveHour(from: Expr[Hour], endExclusive: Expr[Hour])(using
+      Quotes
+  ): Expr[HourRange] =
+    exclusive(from, endExclusive, hourRank, "hour")(
+      '{ Range.exclusive($from, $endExclusive) }
+    )
+
+  def exclusiveMinute(from: Expr[Minute], endExclusive: Expr[Minute])(using
+      Quotes
+  ): Expr[MinuteRange] =
+    exclusive(from, endExclusive, minuteRank, "minute")(
+      '{ Range.exclusive($from, $endExclusive) }
+    )
+
   private def inclusive[T: Type](
       from: Expr[T],
       to: Expr[T],
@@ -53,6 +90,22 @@ private object RangeMacros {
       rank,
       (start, end) => start > end,
       s"Start of an inclusive $fieldName range must be less than or equal to its end."
+    )
+    runtimeFallback
+  }
+
+  private def exclusive[T: Type](
+      from: Expr[T],
+      endExclusive: Expr[T],
+      rank: Expr[T] => Option[Int],
+      fieldName: String
+  )(runtimeFallback: Expr[Range[T]])(using Quotes): Expr[Range[T]] = {
+    rejectIf(
+      from,
+      endExclusive,
+      rank,
+      (start, end) => start >= end,
+      s"Start of an exclusive $fieldName range must be less than its end."
     )
     runtimeFallback
   }

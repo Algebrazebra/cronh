@@ -67,8 +67,10 @@ class RangeTest extends FunSuite {
   }
 
   test("until rejects an empty range") {
+    val start = Hour(9)
+    val end = Hour(9)
     val error = intercept[IllegalArgumentException] {
-      Hour(9) until Hour(9)
+      start until end
     }
 
     assertEquals(
@@ -78,8 +80,39 @@ class RangeTest extends FunSuite {
   }
 
   test("until rejects a descending range") {
+    val start = Hour(17)
+    val end = Hour(9)
     intercept[IllegalArgumentException] {
-      Hour(17) until Hour(9)
+      start until end
+    }
+  }
+
+  test("until rejects empty and descending literal ranges at compile time") {
+    val errors = List(
+      compileErrors("Month.April until Month.April"),
+      compileErrors("DayOfWeek.Friday until DayOfWeek.Monday"),
+      compileErrors("4.th until 4.th"),
+      compileErrors("17.h until 9.h"),
+      compileErrors("30.min until 0.min")
+    )
+
+    errors.foreach { error =>
+      assert(
+        error.contains(
+          "Start of an exclusive"
+        ) && error.contains("range must be less than its end"),
+        error
+      )
+    }
+  }
+
+  test(
+    "a mixed literal and dynamic exclusive range falls back to runtime validation"
+  ) {
+    val end = Hour(9)
+
+    intercept[IllegalArgumentException] {
+      17.h until end
     }
   }
 
