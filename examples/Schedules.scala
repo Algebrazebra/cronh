@@ -31,7 +31,8 @@ object Schedules {
   // weekendBatch.toCron == "0 8 * * 6,0"
 
   // Summer newsletter: June and July, every day at 9 AM.
-  val summerNewsletter = Schedule.in(Month.June, Month.July).daily.at(9.h).at(0.min)
+  val summerNewsletter =
+    Schedule.in(Month.June, Month.July).daily.at(9.h).at(0.min)
   // summerNewsletter.toCron == "0 9 * 6,7 *"
 
   // Mid-June deadline reminder: June 15th at 9 AM.
