@@ -60,7 +60,7 @@ Sometimes the easiest way to learn is to look at a lot of examples. You can find
 
 Generally, this library is designed with correctness in mind.
 Of course, in Scala, this means leveraging its type system and compile-time capabilities like macros.
-But it's also about designing the DSL so that the change of misreading or misunderstanding the specified schedule is minimized.
+But it's also about designing the DSL so that the chance of misreading or misunderstanding the specified schedule is minimized.
 
 ### Compile time and runtime checks
 
