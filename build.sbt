@@ -1,6 +1,6 @@
 /** Build settings
   */
-ThisBuild / scalaVersion := "3.3.8"
+ThisBuild / scalaVersion := "3.9.0"
 ThisBuild / tpolecatDefaultOptionsMode := org.typelevel.sbt.tpolecat.DevMode
 
 /** Maven Central publishing metadata
