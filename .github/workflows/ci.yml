@@ -34,7 +34,7 @@ jobs:
 
       - name: Setup Java (temurin@17)
         if: matrix.java == 'temurin@17'
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 17
@@ -56,7 +56,7 @@ jobs:
         run: sbt '++ ${{ matrix.scala }}; tpolecatCiMode; testFull'
 
       - name: Compress target directories
-        run: tar cf targets.tar target/out/jvm/scala-3.3.8/cronh project/target
+        run: tar cf targets.tar target/out/jvm project/target
 
       - name: Upload target directories
         uses: actions/upload-artifact@v7
@@ -82,7 +82,7 @@ jobs:
 
       - name: Setup Java (temurin@17)
         if: matrix.java == 'temurin@17'
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 17
