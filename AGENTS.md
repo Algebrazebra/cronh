@@ -8,19 +8,19 @@ is a fluent DSL layered over a typed domain model and dialect-aware rendering.
 
 ## Toolchain and commands
 
-- Scala: 3.3.7
-- sbt: 1.12.11
-- CI Java: Temurin 11
+- Scala: 3.3.8
+- sbt: 2.0.11
+- CI Java: Temurin 17 (sbt 2 requires Java 17 or newer)
 - Formatter: scalafmt, configured in `.scalafmt.conf`
 
 Run commands from the repository root:
 
 ```sh
-sbt test                         # compile and run the test suite
+sbt testFull                     # compile and run the full test suite
 sbt "testOnly fully.qualified.TestName" # run a focused test
 sbt scalafmtCheckAll             # check formatting
 sbt scalafmtAll                  # apply formatting
-sbt ci                           # formatting + CI-mode compile + CI-mode tests
+sbt ci                           # formatting + CI-mode compile + full CI-mode tests
 ```
 
 `sbt ci` mirrors the GitHub Actions build steps. Use it before handing off any
