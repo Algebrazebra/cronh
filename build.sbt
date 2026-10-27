@@ -1,32 +1,33 @@
 /** Build settings
   */
+// sbt-github-actions reads the build-scoped version for its publish job.
 ThisBuild / scalaVersion := "3.3.8"
-ThisBuild / tpolecatDefaultOptionsMode := org.typelevel.sbt.tpolecat.DevMode
+tpolecatDefaultOptionsMode := org.typelevel.sbt.tpolecat.DevMode
 
 /** Maven Central publishing metadata
   */
-ThisBuild / organization := "io.github.algebrazebra"
-ThisBuild / organizationName := "Algebrazebra"
-ThisBuild / organizationHomepage := Some(url("https://github.com/Algebrazebra"))
-ThisBuild / homepage := Some(url("https://github.com/Algebrazebra/cronh"))
-ThisBuild / scmInfo := Some(
+organization := "io.github.algebrazebra"
+organizationName := "Algebrazebra"
+organizationHomepage := Some(uri("https://github.com/Algebrazebra"))
+homepage := Some(uri("https://github.com/Algebrazebra/cronh"))
+scmInfo := Some(
   ScmInfo(
-    url("https://github.com/Algebrazebra/cronh"),
+    uri("https://github.com/Algebrazebra/cronh"),
     "scm:git:https://github.com/Algebrazebra/cronh.git"
   )
 )
-ThisBuild / versionScheme := Some("early-semver")
-ThisBuild / developers := List(
+versionScheme := Some("early-semver")
+developers := List(
   Developer(
     id = "algebrazebra",
     name = "Algebrazebra",
     email = "Algebrazebra@users.noreply.github.com",
-    url = url("https://github.com/Algebrazebra")
+    url = uri("https://github.com/Algebrazebra")
   )
 )
-ThisBuild / description := "A Scala 3 library for defining human-readable cron schedules."
-ThisBuild / licenses := List(License.Apache2)
-ThisBuild / pomIncludeRepository := { _ => false }
+description := "A Scala 3 library for defining human-readable cron schedules."
+licenses := List(License.Apache2)
+pomIncludeRepository := { _ => false }
 
 /** GitHub Actions CI/CD workflow settings
   *
@@ -35,7 +36,7 @@ ThisBuild / pomIncludeRepository := { _ => false }
   * steps.
   */
 
-ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("11"))
+ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("17"))
 
 ThisBuild / githubWorkflowTargetTags ++= Seq("v*")
 
@@ -65,27 +66,21 @@ ThisBuild / githubWorkflowBuild := Seq(
     name = Some("Compile")
   ),
   WorkflowStep.Sbt(
-    List("tpolecatCiMode", "test"),
+    List("tpolecatCiMode", "testFull"),
     name = Some("Run tests")
   )
 )
 
-/** Custom `ci` task that runs all sbt commands defined in the GitHub Actions
-  * workflow build steps. This keeps local CI execution in sync with the
-  * generated workflow file.
-  */
-lazy val ci = taskKey[Unit]("Run all GitHub Actions build steps locally")
-
-ci := {
-  val log = streams.value.log
-  val commands = (ThisBuild / githubWorkflowBuild).value.flatMap {
-    case sbtStep: WorkflowStep.Sbt => sbtStep.commands
-    case _                         => Nil
-  }
-  log.info(s"Running CI commands: ${commands.mkString(", ")}")
-  val _ = commands.foldLeft(state.value) { (s, cmd) =>
-    sbt.MainLoop.processCommand(sbt.Exec(cmd, None), s)
-  }
+/** Run the same commands as the generated GitHub Actions build steps. */
+commands += Command.command("ci") { state =>
+  val ciCommands =
+    Project.extract(state).get(ThisBuild / githubWorkflowBuild).flatMap {
+      case sbtStep: WorkflowStep.Sbt => sbtStep.commands
+      case _                         => Nil
+    }
+  state.copy(remainingCommands =
+    ciCommands.map(cmd => Exec(cmd, None)).toList ++ state.remainingCommands
+  )
 }
 
 /** Dependencies and versions

@@ -117,8 +117,10 @@ model are out of scope for now — see [DESIGN.md](DESIGN.md) for more context.
 
 ## Development
 
+Use Java 17 or newer to run sbt 2. The CI workflow uses Temurin 17.
+
 ```
-sbt test          # build and test
+sbt testFull      # build and run the full test suite
 sbt ci            # exactly what GitHub Actions runs
 sbt scalafmtAll   # format
 ```
